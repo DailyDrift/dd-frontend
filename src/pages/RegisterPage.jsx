@@ -3,48 +3,48 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import seaBg from "../assets/sea.jpg";
 
-export default function LoginPage() {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError]       = useState(null);
-    const [loading, setLoading]   = useState(false);
+export default function RegisterPage() {
+    const [username, setUsername]                   = useState("");
+    const [password, setPassword]                   = useState("");
+    const [confirmPassword, setConfirmPassword]     = useState("");
+    const [error, setError]                         = useState(null);
+    const [loading, setLoading]                     = useState(false);
+    const [showPassword, setShowPassword]           = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    const { login } = useAuth();
-    const navigate  = useNavigate();
+    const { register } = useAuth();
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
         setLoading(true);
         try {
-            await login(username, password);
+            await register(username, password);
             navigate("/");
         } catch (err) {
-            setError(err.response?.data?.message ?? "Login fehlgeschlagen");
+            setError(err.message || "Registrierung fehlgeschlagen. Bitte versuche es erneut.");
         } finally {
             setLoading(false);
         }
     };
 
+    const isDisabled = loading || !username || !password || !confirmPassword || password !== confirmPassword;
+
     return (
         <div style={styles.page}>
             <header style={styles.header}>
-                <div style={styles.logo}
-                     onClick={()=> navigate("/")}
-                >Daily Drift</div>
-                <button style={styles.registerButton}
-                        onClick={() => navigate("/")}
-                >Home</button>
+                <div style={styles.logo} onClick={() => navigate("/")}>Daily Drift</div>
+                <button style={styles.registerButton} onClick={() => navigate("/")}>Home</button>
             </header>
 
             <main style={styles.grid}>
                 <div style={styles.cardImage} />
                 <div style={styles.cardRegister}>
-                    <form onSubmit={handleSubmit} style={styles.grid2}>
+                    <form onSubmit={handleSubmit} style={styles.form}>
                         <div style={styles.logo2}>Register</div>
-                        <div style={styles.fieldGroup= {
-                            gridColumn: "1 / 1",
-                            gridRow: "2 / 2",}}>
+
+                        <div style={styles.fieldGroup}>
                             <label style={styles.label}>Username</label>
                             <input
                                 type="text"
@@ -54,42 +54,58 @@ export default function LoginPage() {
                                 disabled={loading}
                             />
                         </div>
-                        <div style={styles.fieldGroup= {
-                            gridColumn: "1 / 2",
-                            gridRow: "3 / 3",}}>
+
+                        <div style={styles.fieldGroup}>
                             <label style={styles.label}>Password</label>
-                            <input
-                                type="password"
-                                style={styles.input}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                disabled={loading}
-                            />
+                            <div style={styles.inputWrapper}>
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    style={styles.input}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    disabled={loading}
+                                />
+                                <span style={styles.eyeIcon} onClick={() => setShowPassword(!showPassword)}>
+                                    {showPassword ? "🙈" : "👁️"}
+                                </span>
+                            </div>
                         </div>
-                        <div style={styles.fieldGroup= {
-                            gridColumn: "1 / 2",
-                            gridRow: "4 / 4",}}>
+
+                        <div style={styles.fieldGroup}>
                             <label style={styles.label}>Confirm Password</label>
-                            <input
-                                type="password"
-                                style={styles.input}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                disabled={loading}
-                            />
+                            <div style={styles.inputWrapper}>
+                                <input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    style={styles.input}
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    disabled={loading}
+                                />
+                                <span style={styles.eyeIcon} onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                                    {showConfirmPassword ? "🙈" : "👁️"}
+                                </span>
+                            </div>
                         </div>
 
                         {error && <p style={styles.error}>{error}</p>}
-                        <button
-                            type="submit"
-                            style={{ ...styles.submitButton, opacity: loading ? 0.5 : 1 }}
-                            disabled={loading}
-                        >
-                            {loading ? "..." : "→"}
-                        </button>
-                        <div style={styles.logo3}
-                             onClick={()=> navigate("/login")}
-                        >You already have an Account?</div>
+
+                        <div style={styles.bottomRow}>
+                            <span style={styles.loginLink} onClick={() => navigate("/login")}>
+                                You already have an Account?
+                            </span>
+                            <button
+                                type="submit"
+                                style={{
+                                    ...styles.submitButton,
+                                    opacity: isDisabled ? 0.4 : 1,
+                                    cursor: isDisabled ? "not-allowed" : "pointer",
+                                    background: isDisabled ? "#e0e0e0" : "#fff",
+                                }}
+                                disabled={isDisabled}
+                            >
+                                {loading ? "..." : "→"}
+                            </button>
+                        </div>
                     </form>
                 </div>
             </main>
@@ -120,18 +136,8 @@ const styles = {
         cursor: "pointer",
     },
     logo2: {
-        gridColumn: "1 / 2",
-        gridRow: "1 / 1",
         fontSize: "24px",
         fontWeight: "600",
-        cursor: "pointer",
-    },
-    logo3: {
-        gridColumn: "1 / 2",
-        gridRow: "5 / 5",
-        fontSize: "14px",
-        fontWeight: "600",
-        cursor: "pointer",
     },
     registerButton: {
         padding: "6px 18px",
@@ -143,43 +149,31 @@ const styles = {
     },
     grid: {
         display: "grid",
-        gridTemplateColumns: " 3fr 1.15fr ",
-        gridTemplateRows: "4fr 1fr",
+        gridTemplateColumns: "3fr 1.15fr",
         gap: "20px",
         height: "calc(100vh - 120px)",
     },
-    grid2: {
-        display: "grid",
-        gridTemplateColumns: " 3fr 1fr 1fr",
-        gridTemplateRows: "0.1fr 0.1fr 0.1fr 0.1fr",
-        gap: "20px",
-        height: "calc(95vh - 135px)",
-    },
     cardImage: {
-        gridColumn: "1 / 1",
-        gridRow: "1 / 2",
         borderRadius: "20px",
         border: "2px solid #000",
-        padding: "16px",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        overflow: "hidden",
-
         backgroundImage: `url(${seaBg})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
     },
     cardRegister: {
-        gridColumn: "2 / 2",
-        gridRow: "1 / 2",
         borderRadius: "20px",
         border: "2px solid #000",
-        padding: "16px",
+        padding: "24px 16px",
         display: "flex",
-        justifyContent: "center",
         alignItems: "center",
+        justifyContent: "center",
+    },
+    form: {
+        display: "flex",
+        flexDirection: "column",
+        gap: "20px",
+        width: "100%",
     },
     fieldGroup: {
         display: "flex",
@@ -190,30 +184,54 @@ const styles = {
         fontSize: "18px",
         fontWeight: "500",
     },
+    inputWrapper: {
+        position: "relative",
+        display: "flex",
+        alignItems: "center",
+    },
+    eyeIcon: {
+        position: "absolute",
+        right: "10px",
+        cursor: "pointer",
+        fontSize: "16px",
+        userSelect: "none",
+    },
     input: {
         height: "38px",
         borderRadius: "14px",
         border: "2px solid #000",
-        padding: "4px 10px",
+        padding: "4px 36px 4px 10px",
         fontSize: "16px",
         outline: "none",
+        width: "100%",
+        boxSizing: "border-box",
+    },
+    bottomRow: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+    loginLink: {
+        fontSize: "14px",
+        fontWeight: "600",
+        cursor: "pointer",
+        textDecoration: "underline",
     },
     submitButton: {
-        gridColumn: "2 / 3",
-        gridRow: "5 / 5",
         width: "70px",
-        height: "50px",
-        borderRadius: "50px",
+        height: "38px",
+        borderRadius: "14px",
         border: "2px solid #000",
-        background: "#fff",
-        cursor: "pointer",
         fontSize: "20px",
+        transition: "all 0.2s ease",
+        flexShrink: 0,
     },
     error: {
-        gridColumn: "1 / 3",
-        gridRow: "6 / 6",
-        color: "red",
-        fontSize: "14px",
+        color: "#c0392b",
+        fontSize: "13px",
+        fontWeight: "500",
+        fontStyle: "italic",
+        letterSpacing: "0.3px",
         margin: 0,
     },
 };

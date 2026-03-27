@@ -20,7 +20,7 @@ export default function LoginPage() {
             await login(username, password);
             navigate("/");
         } catch (err) {
-            setError(err.response?.data?.message ?? "Login fehlgeschlagen");
+            setError("Benutzername oder Passwort ist falsch.");
         } finally {
             setLoading(false);
         }
@@ -30,7 +30,7 @@ export default function LoginPage() {
         <div style={styles.page}>
             <header style={styles.header}>
                 <div style={styles.logo}
-                        onClick={()=> navigate("/")}
+                     onClick={() => navigate("/")}
                 >Daily Drift</div>
                 <button style={styles.registerButton}
                         onClick={() => navigate("/")}
@@ -42,41 +42,50 @@ export default function LoginPage() {
                 <div style={styles.cardLogin}>
                     <form onSubmit={handleSubmit} style={styles.grid2}>
                         <div style={styles.logo2}>Login</div>
-                        <div style={styles.fieldGroup= {
-                                    gridColumn: "1 / 1",
-                                    gridRow: "2 / 2",}}>
+
+                        <div style={{ gridColumn: "1 / 3", gridRow: "2 / 3", display: "flex", flexDirection: "column", gap: "6px" }}>
                             <label style={styles.label}>Username</label>
-                            <input
-                                type="text"
-                                style={styles.input}
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                disabled={loading}
-                            />
+                            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                                <input
+                                    type="text"
+                                    style={styles.input}
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    disabled={loading}
+                                />
+                                <div style={{ width: "70px", flexShrink: 0 }} />
+                            </div>
                         </div>
-                        <div style={styles.fieldGroup= {
-                                    gridColumn: "1 / 2",
-                                    gridRow: "3 / 3",}}>
+
+                        <div style={{ gridColumn: "1 / 3", gridRow: "3 / 4", display: "flex", flexDirection: "column", gap: "6px" }}>
                             <label style={styles.label}>Password</label>
-                            <input
-                                type="password"
-                                style={styles.input}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                disabled={loading}
-                            />
+                            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                                <input
+                                    type="password"
+                                    style={styles.input}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    disabled={loading}
+                                />
+                                <button
+                                    type="submit"
+                                    style={{
+                                        ...styles.submitButton,
+                                        opacity: (loading || !username || !password) ? 0.4 : 1,
+                                        cursor: (loading || !username || !password) ? "not-allowed" : "pointer",
+                                        background: (loading || !username || !password) ? "#e0e0e0" : "#fff",
+                                    }}
+                                    disabled={loading || !username || !password}
+                                >
+                                    {loading ? "..." : "→"}
+                                </button>
+                            </div>
                         </div>
 
                         {error && <p style={styles.error}>{error}</p>}
-                        <button
-                            type="submit"
-                            style={{ ...styles.submitButton, opacity: loading ? 0.5 : 1 }}
-                            disabled={loading}
-                        >
-                            {loading ? "..." : "→"}
-                        </button>
+
                         <div style={styles.logo3}
-                             onClick={()=> navigate("/register")}
+                             onClick={() => navigate("/register")}
                         >You don't have an Account?</div>
                     </form>
                 </div>
@@ -109,17 +118,19 @@ const styles = {
     },
     logo2: {
         gridColumn: "1 / 2",
-        gridRow: "1 / 1",
+        gridRow: "1 / 2",
         fontSize: "24px",
         fontWeight: "600",
         cursor: "pointer",
     },
     logo3: {
-        gridColumn: "1 / 2",
-        gridRow: "4 / 4",
+        gridColumn: "1 / 3",
+        gridRow: "5 / 6",
         fontSize: "14px",
         fontWeight: "600",
         cursor: "pointer",
+        textDecoration: "underline",
+        whitespace: "nowrap",
     },
     registerButton: {
         padding: "6px 18px",
@@ -131,20 +142,20 @@ const styles = {
     },
     grid: {
         display: "grid",
-        gridTemplateColumns: " 1.15fr 3fr",
+        gridTemplateColumns: "1.15fr 3fr",
         gridTemplateRows: "4fr 1fr",
         gap: "20px",
         height: "calc(100vh - 120px)",
     },
     grid2: {
         display: "grid",
-        gridTemplateColumns: " 3fr 1fr 1fr",
-        gridTemplateRows: "0.3fr 0.1fr 0.3fr",
+        gridTemplateColumns: "3fr 1fr 1fr",
+        gridTemplateRows: "0.3fr 0.1fr 0.3fr 0.1fr 0.1fr",
         gap: "20px",
         height: "calc(95vh - 135px)",
     },
     cardImage: {
-        gridColumn: "2 / 2",
+        gridColumn: "2 / 3",
         gridRow: "1 / 2",
         borderRadius: "20px",
         border: "2px solid #000",
@@ -153,14 +164,13 @@ const styles = {
         justifyContent: "center",
         alignItems: "center",
         overflow: "hidden",
-
         backgroundImage: `url(${seaBg})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
     },
     cardLogin: {
-        gridColumn: "1 / 1",
+        gridColumn: "1 / 2",
         gridRow: "1 / 2",
         borderRadius: "20px",
         border: "2px solid #000",
@@ -169,39 +179,38 @@ const styles = {
         justifyContent: "center",
         alignItems: "center",
     },
-    fieldGroup: {
-        display: "flex",
-        flexDirection: "column",
-        gap: "6px",
-    },
     label: {
         fontSize: "18px",
         fontWeight: "500",
     },
     input: {
         height: "38px",
+        boxSizing: "border-box",
         borderRadius: "14px",
         border: "2px solid #000",
         padding: "4px 10px",
         fontSize: "16px",
         outline: "none",
+        flex: 1,
     },
     submitButton: {
-        gridColumn: "2 / 3",
-        gridRow: "4 / 4",
         width: "70px",
-        height: "50px",
-        borderRadius: "50px",
+        height: "38px",
+        borderRadius: "14px",
         border: "2px solid #000",
-        background: "#fff",
-        cursor: "pointer",
         fontSize: "20px",
+        transition: "all 0.2s ease",
+        flexShrink: 0,
     },
     error: {
-        gridColumn: "1 / 3",
-        gridRow: "5 / 5",
-        color: "red",
-        fontSize: "14px",
+        gridColumn: "1 / 2",
+        gridRow: "4 / 5",
+        color: "#c0392b",
+        fontSize: "13px",
+        fontWeight: "500",
+        fontStyle: "italic",
+        letterSpacing: "0.3px",
         margin: 0,
+        whiteSpace: "nowrap",
     },
 };
