@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext.jsx";
 import gardenBg from "../assets/garden.jpg";
 
 export default function HomePage() {
@@ -7,6 +8,8 @@ export default function HomePage() {
     const [journalHovered, setJournalHovered] = useState(false);
     const [quoteHovered, setQuoteHovered] = useState(false);
     const [aboutHovered, setAboutHovered] = useState(false);
+    const { isAuthenticated } = useAuth();
+
     const [analyticsHovered, setAnalyticsHovered] = useState(false);
 
     return (
@@ -21,7 +24,7 @@ export default function HomePage() {
             <main style={styles.grid}>
                 <section
                     style={styles.cardJournal}
-                    onClick={() => navigate("/login")}
+                    onClick={() => navigate(isAuthenticated ? "/journal" : "/login")}
                     onMouseEnter={() => setJournalHovered(true)}
                     onMouseLeave={() => setJournalHovered(false)}
                 >
