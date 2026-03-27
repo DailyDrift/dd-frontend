@@ -1,7 +1,10 @@
 import { useNavigate } from "react-router-dom";
+import api from "../api/api.js";
+import {useEffect} from "react";
 
 export default function JournalingPage() {
     let navigate = useNavigate();
+
     return (
         <div style={styles.page}>
             <header style={styles.header}>
