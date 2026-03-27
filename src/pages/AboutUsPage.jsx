@@ -1,18 +1,23 @@
-// src/pages/HomePage.jsx
-export default function HomePage() {
+import { useNavigate } from "react-router-dom";
+import YABg from "../assets/YA.jpg";
+import BEBg from "../assets/BE.jpg";
+
+export default function AboutPage() {
+    let navigate = useNavigate();
     return (
         <div style={styles.page}>
             <header style={styles.header}>
                 <div style={styles.logo}>Daily Drift</div>
-                <button style={styles.menuButton}>About Us</button>
+                <button style={styles.menuButton}
+                        onClick={() => navigate("/")}
+                >Home</button>
             </header>
 
             <main style={styles.grid}>
-                <section style={styles.cardJournal}>Your Journal</section>
-                <section style={styles.cardQuote}>Quote of the Day</section>
-                <section style={styles.cardImage}>Bild / Illustration</section>
-                <section style={styles.cardAboutJournaling}>About journaling</section>
-                <section style={styles.cardAnalytics}>Analytics</section>
+                <section style={styles.cardAboutYa}></section>
+                <section style={styles.cardAboutBe}></section>
+                <section style={styles.logoYa}>Yanik Hofmann <br /> Logic and Backend <br /> Computer Science Student</section>
+                <section style={styles.logoBe}>Belinda Lattka <br /> Design and Frontend <br /> Computer Science Student</section>
             </main>
         </div>
     );
@@ -39,6 +44,22 @@ const styles = {
         fontSize: "24px",
         fontWeight: "600",
     },
+    logoBe: {
+        gridColumn: "4 / 5",
+        gridRow: "3 / 3",
+        fontSize: "24px",
+        fontWeight: "500",
+        textAlign: "center",
+        justifyContent: "top",
+    },
+    logoYa: {
+        gridColumn: "2 / 3",
+        gridRow: "3 / 3",
+        fontSize: "24px",
+        fontWeight: "500",
+        textAlign: "center",
+        justifyContent: "top",
+    },
     menuButton: {
         borderRadius: "16px",
         border: "2px solid #000",
@@ -48,11 +69,10 @@ const styles = {
     },
     grid: {
         display: "grid",
-        gridTemplateColumns: " 1fr 1fr 1fr 1.2fr",
-        gridTemplateRows: "1fr 1fr",
+        gridTemplateColumns: " 1fr 1.2fr 0.6fr 1.2fr 1fr",
+        gridTemplateRows: "0.1fr 1.8fr 1fr",
         gap: "20px",
         height: "calc(100vh - 120px)",
-        cursor: "pointer",
     },
     cardBase: {
         borderRadius: "20px",
@@ -64,11 +84,10 @@ const styles = {
         justifyContent: "center",
         alignItems: "center",
     },
-
-    cardJournal: {
-        gridColumn: "1 / 3",
-        gridRow: "1 / 2",
-        borderRadius: "20px",
+    cardAboutYa: {
+        gridColumn: "2 / 3",
+        gridRow: "2 / 3",
+        borderRadius: "900px",
         border: "2px solid #000",
         padding: "16px",
         fontSize: "30px",
@@ -76,42 +95,16 @@ const styles = {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-    },
 
-    cardQuote: {
-        gridColumn: "3 / 4",
-        gridRow: "1 / 2",
-        borderRadius: "20px",
-        border: "2px solid #000",
-        padding: "16px",
-        fontSize: "30px",
-        fontWeight: "600",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-
-    cardImage: {
-        gridColumn: "4 / 4",
-        gridRow: "1 / 4",
-        borderRadius: "20px",
-        border: "2px solid #000",
-        padding: "16px",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        overflow: "hidden",
-
-        backgroundImage: "url('/assets/garden.png')",
+        backgroundImage: `url(${YABg})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
     },
-
-    cardAnalytics: {
-        gridColumn: "2 / 4",
-        gridRow: "2 / 4",
-        borderRadius: "20px",
+    cardAboutBe: {
+        gridColumn: "4 / 5",
+        gridRow: "2 / 3",
+        borderRadius: "360px",
         border: "2px solid #000",
         padding: "16px",
         fontSize: "30px",
@@ -119,18 +112,10 @@ const styles = {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-    },
 
-    cardAboutJournaling: {
-        gridColumn: "1 / 2",
-        gridRow: "2 / 4",
-        borderRadius: "20px",
-        border: "2px solid #000",
-        padding: "16px",
-        fontSize: "30px",
-        fontWeight: "600",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+        backgroundImage: `url(${BEBg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
     },
 };

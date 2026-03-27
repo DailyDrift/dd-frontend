@@ -1,18 +1,29 @@
-// src/pages/HomePage.jsx
+import { useNavigate } from "react-router-dom";
+
 export default function Stat1Page() {
+    let navigate = useNavigate();
     return (
         <div style={styles.page}>
             <header style={styles.header}>
-                <div style={styles.logo}>Daily Drift</div>
-                <button style={styles.menuButton}>About Us</button>
+                <div style={styles.logo}
+                     onClick={() => navigate("/")}
+                >Daily Drift</div>
+                <button style={styles.menuButton}
+                        onClick={() => navigate("/")}
+                >Home</button>
             </header>
 
             <main style={styles.grid}>
-                <section style={styles.cardJournal}>Your Journal</section>
-                <section style={styles.cardQuote}>Quote of the Day</section>
-                <section style={styles.cardImage}>Bild / Illustration</section>
-                <section style={styles.cardAboutJournaling}>About journaling</section>
-                <section style={styles.cardAnalytics}>Analytics</section>
+                <section style={styles.cardWater}>Water Consumption</section>
+                <section style={styles.logoWater}>25</section>
+                <div style={styles.cardAna2}
+                     onClick={() => navigate("/more-analytics")}
+                >Take a deeper Look</div>
+                <section style={styles.cardTodo}>Todos done this Month</section>
+                <section style={styles.logoTodo}>25</section>
+                <section style={styles.cardSleep}>Sleep per Day</section>
+                <section style={styles.logoSleep}>2,5</section>
+                <section style={styles.cardMood}>Your Mood this Month</section>
             </main>
         </div>
     );
@@ -64,51 +75,63 @@ const styles = {
         justifyContent: "center",
         alignItems: "center",
     },
-
-    cardJournal: {
+    cardWater: {
         gridColumn: "1 / 3",
         gridRow: "1 / 2",
         borderRadius: "20px",
         border: "2px solid #000",
         padding: "16px",
         fontSize: "30px",
-        fontWeight: "600",
+        fontWeight: "500",
+        textAlign: "center",
         display: "flex",
         justifyContent: "center",
-        alignItems: "center",
+        overflow: "hidden",
     },
-
-    cardQuote: {
+    logoWater: {
+        gridColumn: "1 / 3",
+        gridRow: "1 / 2",
+        fontSize: "120px",
+        fontWeight: "400",
+        textAlign: "center",
+        justifyContent: "top",
+    },
+    cardAna2: {
         gridColumn: "3 / 4",
         gridRow: "1 / 2",
         borderRadius: "20px",
         border: "2px solid #000",
         padding: "16px",
         fontSize: "30px",
-        fontWeight: "600",
+        fontWeight: "500",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        textAlign: "center",
+        cursor: "pointer",
     },
-
-    cardImage: {
+    cardTodo: {
         gridColumn: "4 / 4",
         gridRow: "1 / 4",
         borderRadius: "20px",
         border: "2px solid #000",
         padding: "16px",
+        fontSize: "30px",
+        fontWeight: "500",
+        textAlign: "center",
         display: "flex",
         justifyContent: "center",
-        alignItems: "center",
         overflow: "hidden",
-
-        backgroundImage: "url('/assets/garden.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
     },
-
-    cardAnalytics: {
+    logoTodo: {
+        gridColumn: "4 / 4",
+        gridRow: "2 / 3",
+        fontSize: "120px",
+        fontWeight: "400",
+        textAlign: "center",
+        justifyContent: "top",
+    },
+    cardMood: {
         gridColumn: "2 / 4",
         gridRow: "2 / 4",
         borderRadius: "20px",
@@ -118,10 +141,8 @@ const styles = {
         fontWeight: "600",
         display: "flex",
         justifyContent: "center",
-        alignItems: "center",
     },
-
-    cardAboutJournaling: {
+    cardSleep: {
         gridColumn: "1 / 2",
         gridRow: "2 / 4",
         borderRadius: "20px",
@@ -131,6 +152,13 @@ const styles = {
         fontWeight: "600",
         display: "flex",
         justifyContent: "center",
-        alignItems: "center",
+    },
+    logoSleep: {
+        gridColumn: "1 / 2",
+        gridRow: "2 / 4",
+        fontSize: "120px",
+        fontWeight: "400",
+        textAlign: "center",
+        justifyContent: "top",
     },
 };

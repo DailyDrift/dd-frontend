@@ -1,30 +1,89 @@
-// src/pages/HomePage.jsx
-export default function Stat2Page() {
+import React from 'react';
+import { useNavigate } from "react-router-dom";
+import gardenBg from "../assets/garden.jpg";
+
+const StatsPage = () => {
+    let navigate = useNavigate();
     return (
         <div style={styles.page}>
             <header style={styles.header}>
-                <div style={styles.logo}>Daily Drift</div>
-                <button style={styles.menuButton}>About Us</button>
+                <div style={styles.logo}
+                     onClick={() => navigate("/")}
+                >Daily Drift</div>
+                <button style={styles.menuButton}
+                        onClick={() => navigate("/")}
+                >Home</button>
             </header>
 
-            <main style={styles.grid}>
-                <section style={styles.cardJournal}>Your Journal</section>
-                <section style={styles.cardQuote}>Quote of the Day</section>
-                <section style={styles.cardImage}>Bild / Illustration</section>
-                <section style={styles.cardAboutJournaling}>About journaling</section>
-                <section style={styles.cardAnalytics}>Analytics</section>
-            </main>
+            <section style={styles.cardGood}>
+                <div  style={styles.grid}>
+                    <section style={styles.cardPicture}></section>
+                </div>
+            </section>
+
+            <div style={styles.chartsContainer}>
+                {/* Water */}
+                <section style={styles.chartCard}>
+                    <div style={styles.chartTitle}>Water consumption</div>
+                    <div style={styles.chart}>
+                        <div style={styles.barGroup}>
+                            <div style={styles.bar.blue} />
+                            <div style={styles.bar.green} />
+                            <div style={styles.bar.orange} />
+                        </div>
+                        <div style={styles.chartText}>Average should consume at least</div>
+                    </div>
+                </section>
+
+                {/* Sleep */}
+                <section style={styles.chartCard}>
+                    <div style={styles.chartTitle}>Sleep</div>
+                    <div style={styles.chart}>
+                        <div style={styles.barGroup}>
+                            <div style={styles.bar.blue} />
+                            <div style={styles.bar.green} />
+                        </div>
+                        <div style={styles.chartText}>Supports your every efficiency</div>
+                    </div>
+                </section>
+
+                {/* Todos */}
+                <section style={styles.chartCard}>
+                    <div style={styles.chartTitle}>Todos</div>
+                    <div style={styles.chart}>
+                        <div style={styles.barGroup}>
+                            <div style={styles.bar.blue} />
+                            <div style={styles.bar.green} />
+                        </div>
+                        <div style={styles.chartText}>Setting todos is a great way to procrastination</div>
+                    </div>
+                </section>
+
+                {/* Mood */}
+                <section style={styles.chartCard}>
+                    <div style={styles.chartTitle}>Daily Mood</div>
+                    <div style={styles.chart}>
+                        <div style={styles.barGroup}>
+                            <div style={styles.bar.blue} />
+                            <div style={styles.bar.green} />
+                            <div style={styles.bar.orange} />
+                        </div>
+                        <div style={styles.chartText}>Your daily mood can help you meet your goals quicker</div>
+                    </div>
+                </section>
+            </div>
         </div>
     );
-}
+};
 
 const styles = {
     page: {
-        minHeight: "100vh",
-        padding: "16px",
+        minHeight: '100vh',
+        background: '000',
+        padding: '16px',
         boxSizing: "border-box",
         fontFamily: "'Segoe UI', system-ui, sans-serif",
-        background: "#fff",
+        overflowY: 'scroll',
     },
     header: {
         display: "flex",
@@ -48,89 +107,73 @@ const styles = {
     },
     grid: {
         display: "grid",
-        gridTemplateColumns: " 1fr 1fr 1fr 1.2fr",
-        gridTemplateRows: "1fr 1fr",
+        gridTemplateColumns: " 1fr 5fr",
+        gridTemplateRows: "1fr",
         gap: "20px",
-        height: "calc(100vh - 120px)",
-        cursor: "pointer",
+        height: "calc(75vh - 120px)",
     },
-    cardBase: {
+    cardGood: {
         borderRadius: "20px",
-        border: "4px solid #000",
-        padding: "16px",
-        fontSize: "22px",
+        border: "2px solid #000",
+        fontSize: "30px",
         fontWeight: "500",
         display: "flex",
         justifyContent: "center",
-        alignItems: "center",
-    },
-
-    cardJournal: {
-        gridColumn: "1 / 3",
-        gridRow: "1 / 2",
-        borderRadius: "20px",
-        border: "2px solid #000",
-        padding: "16px",
-        fontSize: "30px",
-        fontWeight: "600",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-
-    cardQuote: {
-        gridColumn: "3 / 4",
-        gridRow: "1 / 2",
-        borderRadius: "20px",
-        border: "2px solid #000",
-        padding: "16px",
-        fontSize: "30px",
-        fontWeight: "600",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-
-    cardImage: {
-        gridColumn: "4 / 4",
-        gridRow: "1 / 4",
-        borderRadius: "20px",
-        border: "2px solid #000",
-        padding: "16px",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
         overflow: "hidden",
+    },
+    cardPicture: {
+        gridColumn: "1 / 7",
+        padding: "16px",
+        display: "flex",
+        overflow: "hidden",
+        justifyContent: "flex-end",
+        alignItems: "flex-end",
 
-        backgroundImage: "url('/assets/garden.png')",
+        backgroundImage: `url(${gardenBg})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
     },
-
-    cardAnalytics: {
-        gridColumn: "2 / 4",
-        gridRow: "2 / 4",
-        borderRadius: "20px",
-        border: "2px solid #000",
-        padding: "16px",
-        fontSize: "30px",
-        fontWeight: "600",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+    successTitle: { fontSize: '2.2em', fontWeight: '700' },
+    chartsContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '30px',
+        maxWidth: '500px',
+        margin: '0 auto',
     },
-
-    cardAboutJournaling: {
-        gridColumn: "1 / 2",
-        gridRow: "2 / 4",
-        borderRadius: "20px",
-        border: "2px solid #000",
-        padding: "16px",
-        fontSize: "30px",
-        fontWeight: "600",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+    chartCard: {
+        background: 'white',
+        borderRadius: '20px',
+        padding: '30px',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
+        borderLeft: '6px solid #667eea',
+    },
+    chartTitle: {
+        fontSize: '1.4em',
+        fontWeight: '700',
+        color: '#333',
+        marginBottom: '25px',
+        textAlign: 'center',
+    },
+    chart: { textAlign: 'center' },
+    barGroup: {
+        display: 'flex',
+        justifyContent: 'space-around',
+        marginBottom: '20px',
+        height: '120px',
+        alignItems: 'flex-end',
+    },
+    bar: {
+        width: '40px',
+        borderRadius: '8px 8px 4px 4px',
+        margin: '0 5px',
+    },
+    chartText: {
+        fontSize: '1em',
+        color: '#666',
+        lineHeight: '1.5',
     },
 };
+
+export default StatsPage;

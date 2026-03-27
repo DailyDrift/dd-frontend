@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import gardenBg from "../assets/garden.jpg";
 
 export default function HomePage() {
     let navigate = useNavigate();
@@ -6,16 +7,29 @@ export default function HomePage() {
         <div style={styles.page}>
             <header style={styles.header}>
                 <div style={styles.logo}>Daily Drift</div>
-                <button style={styles.menuButton}>About Us</button>
+                <button style={styles.menuButton}
+                        onClick={() => navigate("/about-us")}
+                >About Us</button>
             </header>
 
             <main style={styles.grid}>
                 <section style={styles.cardJournal}
-                         onClick={() => navigate("/journal")}>Your Journal</section>
-                <section style={styles.cardQuote}>Quote of the Day</section>
-                <section style={styles.cardImage}>Bild / Illustration</section>
-                <section style={styles.cardAboutJournaling}>About journaling</section>
-                <section style={styles.cardAnalytics}>Analytics</section>
+                         onClick={() => navigate("/login")}
+                >Your Journal</section>
+
+                <section style={styles.cardQuote}
+                         onClick={() => navigate("/quote")}
+                >Quote of the Day</section>
+
+                <section style={styles.cardImage}></section>
+
+                <section style={styles.cardAboutJournaling}
+                         onClick={() => navigate("/about-Journaling")}
+                >About Journaling</section>
+
+                <section style={styles.cardAnalytics}
+                         onClick={() => navigate("/analytics")}
+                >Analytics</section>
             </main>
         </div>
     );
@@ -105,7 +119,7 @@ const styles = {
         alignItems: "center",
         overflow: "hidden",
 
-        backgroundImage: "url('/assets/garden.png')",
+        backgroundImage: `url(${gardenBg})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
