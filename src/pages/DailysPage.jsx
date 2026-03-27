@@ -1,18 +1,24 @@
-// src/pages/HomePage.jsx
+import { useNavigate } from "react-router-dom";
+
 export default function DailysPage() {
+    const navigate  = useNavigate();
     return (
         <div style={styles.page}>
             <header style={styles.header}>
-                <div style={styles.logo}>Daily Drift</div>
-                <button style={styles.menuButton}>About Us</button>
+                <div style={styles.logo}
+                    onClick={() => navigate("/")}
+                >Daily Drift</div>
+                <button style={styles.menuButton}
+                        onClick={() => navigate("/")}
+                >Home</button>
             </header>
 
             <main style={styles.grid}>
-                <section style={styles.cardJournal}>Your Journal</section>
-                <section style={styles.cardQuote}>Quote of the Day</section>
-                <section style={styles.cardImage}>Bild / Illustration</section>
-                <section style={styles.cardAboutJournaling}>About journaling</section>
-                <section style={styles.cardAnalytics}>Analytics</section>
+                <section style={styles.cardJournal}></section>
+                <section style={styles.cardQuote}></section>
+                <section style={styles.cardImage}></section>
+                <section style={styles.cardAboutJournaling}></section>
+                <section style={styles.cardAnalytics}></section>
             </main>
         </div>
     );
@@ -24,7 +30,7 @@ const styles = {
         padding: "16px",
         boxSizing: "border-box",
         fontFamily: "'Segoe UI', system-ui, sans-serif",
-        background: "#0ff",
+        background: "#fff",
     },
     header: {
         display: "flex",
@@ -38,6 +44,7 @@ const styles = {
     logo: {
         fontSize: "24px",
         fontWeight: "600",
+        cursor: "pointer",
     },
     menuButton: {
         borderRadius: "16px",
@@ -48,7 +55,7 @@ const styles = {
     },
     grid: {
         display: "grid",
-        gridTemplateColumns: " 1fr 1fr 1fr 1.2fr",
+        gridTemplateColumns: " 0.8fr 1fr 1fr 1.5fr",
         gridTemplateRows: "1fr 1fr",
         gap: "20px",
         height: "calc(100vh - 120px)",
