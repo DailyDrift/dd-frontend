@@ -4,8 +4,8 @@ import gardenBg from "../assets/garden.jpg";
 
 export default function QuotePage() {
     let navigate = useNavigate();
-    const [quote, setQuote] = useState("...");
-    const [author, setAuthor] = useState("...");
+    const [quote, setQuote] = useState("");
+    const [author, setAuthor] = useState("");
 
     useEffect(() => {
         fetch("http://localhost:3000/v1/quotes/quoteOfTheDay")
@@ -22,6 +22,22 @@ export default function QuotePage() {
 
     return (
         <div style={styles.page}>
+            <style>{`
+                @keyframes blurFadeIn {
+                    from {
+                        opacity: 0;
+                        filter: blur(12px);
+                    }
+                    to {
+                        opacity: 1;
+                        filter: blur(0px);
+                    }
+                }
+                .blur-fade-in {
+                    animation: blurFadeIn 1s ease-out forwards;
+                }
+            `}</style>
+
             <header style={styles.header}>
                 <div style={styles.logo}>Daily Drift</div>
                 <button style={styles.menuButton}
@@ -30,8 +46,20 @@ export default function QuotePage() {
             </header>
 
             <main style={styles.grid}>
-                <section style={styles.cardWho}>{author}</section>
-                <section style={styles.cardQuote}>{quote}</section>
+                <section style={styles.cardWho}>
+                    {author && (
+                        <span key={author} className="blur-fade-in">
+                            {author}
+                        </span>
+                    )}
+                </section>
+                <section style={styles.cardQuote}>
+                    {quote && (
+                        <span key={quote} className="blur-fade-in" style={{ animationDelay: "0.2s", opacity: 0 }}>
+                            {quote}
+                        </span>
+                    )}
+                </section>
                 <section style={styles.cardImage}></section>
             </main>
         </div>
