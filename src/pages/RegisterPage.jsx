@@ -33,6 +33,8 @@ export default function RegisterPage() {
 
     return (
         <div style={styles.page}>
+            <style>{fadeInKeyframes}</style>
+
             <header style={styles.header}>
                 <div style={styles.logo} onClick={() => navigate("/")}>Daily Drift</div>
                 <button style={styles.registerButton} onClick={() => navigate("/")}>Home</button>
@@ -40,11 +42,12 @@ export default function RegisterPage() {
 
             <main style={styles.grid}>
                 <div style={styles.cardImage} />
-                <div style={styles.cardRegister}>
-                    <form onSubmit={handleSubmit} style={styles.form}>
-                        <div style={styles.logo2}>Register</div>
 
-                        <div style={styles.fieldGroup}>
+                <div style={{ ...styles.cardRegister, ...fadeIn(2) }}>
+                    <form onSubmit={handleSubmit} style={styles.form}>
+                        <div style={{ ...styles.logo2, ...fadeIn(3) }}>Register</div>
+
+                        <div style={{ ...styles.fieldGroup, ...fadeIn(4) }}>
                             <label style={styles.label}>Username</label>
                             <input
                                 type="text"
@@ -55,7 +58,7 @@ export default function RegisterPage() {
                             />
                         </div>
 
-                        <div style={styles.fieldGroup}>
+                        <div style={{ ...styles.fieldGroup, ...fadeIn(5) }}>
                             <label style={styles.label}>Password</label>
                             <div style={styles.inputWrapper}>
                                 <input
@@ -71,7 +74,7 @@ export default function RegisterPage() {
                             </div>
                         </div>
 
-                        <div style={styles.fieldGroup}>
+                        <div style={{ ...styles.fieldGroup, ...fadeIn(6) }}>
                             <label style={styles.label}>Confirm Password</label>
                             <div style={styles.inputWrapper}>
                                 <input
@@ -89,7 +92,7 @@ export default function RegisterPage() {
 
                         {error && <p style={styles.error}>{error}</p>}
 
-                        <div style={styles.bottomRow}>
+                        <div style={{ ...styles.bottomRow, ...fadeIn(7) }}>
                             <span style={styles.loginLink} onClick={() => navigate("/login")}>
                                 You already have an Account?
                             </span>
@@ -112,6 +115,28 @@ export default function RegisterPage() {
         </div>
     );
 }
+
+// --- Animation helpers ---
+
+const fadeInKeyframes = `
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(18px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+`;
+
+const fadeIn = (step) => ({
+    animation: `fadeInUp 0.5s ease both`,
+    animationDelay: `${(step - 1) * 0.08}s`,
+});
+
+// --- Styles ---
 
 const styles = {
     page: {
