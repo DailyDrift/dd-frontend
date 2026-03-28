@@ -23,3 +23,8 @@ export const registerRequest = async (username, password) => {
         throw new Error(msg || "Registrierung fehlgeschlagen.");
     }
 };
+
+export async function getMeRequest() {
+    const response = await api.get(`${BASE_URL}/v1/user/me`);
+    return response.data;
+}
