@@ -1,8 +1,25 @@
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import gardenBg from "../assets/garden.jpg";
 
 export default function QuotePage() {
     let navigate = useNavigate();
+    const [quote, setQuote] = useState("...");
+    const [author, setAuthor] = useState("...");
+
+    useEffect(() => {
+        fetch("http://localhost:3000/v1/quotes/quoteOfTheDay")
+            .then((res) => res.json())
+            .then((data) => {
+                setQuote(data.quote);
+                setAuthor("~" + data.author);
+            })
+            .catch(() => {
+                setQuote("quote could not be loaded.");
+                setAuthor("");
+            });
+    }, []);
+
     return (
         <div style={styles.page}>
             <header style={styles.header}>
@@ -13,8 +30,8 @@ export default function QuotePage() {
             </header>
 
             <main style={styles.grid}>
-                <section style={styles.cardWho}>Your Journal</section>
-                <section style={styles.cardQuote}>Quote of the Day</section>
+                <section style={styles.cardWho}>{author}</section>
+                <section style={styles.cardQuote}>{quote}</section>
                 <section style={styles.cardImage}></section>
             </main>
         </div>
