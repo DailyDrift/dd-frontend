@@ -1,14 +1,24 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { loginRequest, registerRequest } from '../api/authApi';
+import { loginRequest, registerRequest, getMeRequest } from '../api/AuthApi';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [username, setUsername] = useState(null);
 
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
-        setIsAuthenticated(!!token);
+        if (token) {
+            setIsAuthenticated(true);
+            getMeRequest()
+                .then(data => setUsername(data.username))
+                .catch(() => {
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('refreshToken');
+                    setIsAuthenticated(false);
+                });
+        }
     }, []);
 
     const login = async (username, password) => {
@@ -16,6 +26,8 @@ export function AuthProvider({ children }) {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         setIsAuthenticated(true);
+        const me = await getMeRequest();
+        setUsername(me.username);
     };
 
     const register = async (username, password) => {
@@ -23,16 +35,19 @@ export function AuthProvider({ children }) {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         setIsAuthenticated(true);
+        const me = await getMeRequest();
+        setUsername(me.username);
     };
 
     const logout = () => {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         setIsAuthenticated(false);
+        setUsername(null);
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, login, logout, register }}>
+        <AuthContext.Provider value={{ isAuthenticated, username, login, logout, register }}>
             {children}
         </AuthContext.Provider>
     );

@@ -8,7 +8,7 @@ export default function HomePage() {
     const [journalHovered, setJournalHovered] = useState(false);
     const [quoteHovered, setQuoteHovered] = useState(false);
     const [aboutHovered, setAboutHovered] = useState(false);
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, username, logout } = useAuth();
 
     const [analyticsHovered, setAnalyticsHovered] = useState(false);
 
@@ -37,9 +37,29 @@ export default function HomePage() {
 
             <header style={styles.header}>
                 <div style={styles.logo}>Daily Drift</div>
-                <button style={styles.menuButton}
+
+                {/* NEU: rechts, links vom About-Us-Button */}
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    {isAuthenticated && username && (
+                        <>
+                <span style={styles.userInfo}>
+                    Currently logged in as: <strong>{username}</strong>
+                </span>
+                            <button
+                                style={styles.menuButton}
+                                onClick={logout}
+                            >
+                                Logout
+                            </button>
+                        </>
+                    )}
+                    <button
+                        style={styles.menuButton}
                         onClick={() => navigate("/about-us")}
-                >About Us</button>
+                    >
+                        About Us
+                    </button>
+                </div>
             </header>
 
             <main style={styles.grid}>
@@ -252,5 +272,10 @@ const styles = {
         alignItems: "center",
         position: "relative",
         overflow: "hidden",
+    },
+    userInfo: {
+        fontSize: "14px",
+        fontWeight: "400",
+        color: "#333",
     },
 };
