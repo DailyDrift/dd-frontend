@@ -14,6 +14,27 @@ export default function HomePage() {
 
     return (
         <div style={styles.page}>
+            <style>{`
+                @keyframes fadeInBlur {
+                    from {
+                        opacity: 0;
+                        filter: blur(12px);
+                        transform: translateY(8px);
+                    }
+                    to {
+                        opacity: 1;
+                        filter: blur(0px);
+                        transform: translateY(0px);
+                    }
+                }
+                .card { animation: fadeInBlur 0.8s ease forwards; opacity: 0; }
+                .card:nth-child(1) { animation-delay: 0.1s; }
+                .card:nth-child(2) { animation-delay: 0.25s; }
+                .card:nth-child(3) { animation-delay: 0.4s; }
+                .card:nth-child(4) { animation-delay: 0.55s; }
+                .card:nth-child(5) { animation-delay: 0.7s; }
+            `}</style>
+
             <header style={styles.header}>
                 <div style={styles.logo}>Daily Drift</div>
                 <button style={styles.menuButton}
@@ -23,6 +44,7 @@ export default function HomePage() {
 
             <main style={styles.grid}>
                 <section
+                    className="card"
                     style={styles.cardJournal}
                     onClick={() => navigate(isAuthenticated ? "/journal" : "/login")}
                     onMouseEnter={() => setJournalHovered(true)}
@@ -47,6 +69,7 @@ export default function HomePage() {
                 </section>
 
                 <section
+                    className="card"
                     style={styles.cardQuote}
                     onClick={() => navigate("/quote")}
                     onMouseEnter={() => setQuoteHovered(true)}
@@ -70,9 +93,10 @@ export default function HomePage() {
                     </span>
                 </section>
 
-                <section style={styles.cardImage}></section>
+                <section className="card" style={styles.cardImage}></section>
 
                 <section
+                    className="card"
                     style={styles.cardAboutJournaling}
                     onClick={() => navigate("/about-Journaling")}
                     onMouseEnter={() => setAboutHovered(true)}
@@ -97,6 +121,7 @@ export default function HomePage() {
                 </section>
 
                 <section
+                    className="card"
                     style={styles.cardAnalytics}
                     onClick={() => navigate(isAuthenticated ? "/analytics" : "/login")}
                     onMouseEnter={() => setAnalyticsHovered(true)}
