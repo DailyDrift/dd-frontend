@@ -18,57 +18,68 @@ const StatsPage = () => {
             <section style={styles.cardGood}>
                 <div  style={styles.grid}>
                     <section style={styles.cardPicture}></section>
+                    <section style={styles.logoGood}>You did good this Month!</section>
                 </div>
             </section>
 
             <div style={styles.chartsContainer}>
                 {/* Water */}
-                <section style={styles.chartCard}>
-                    <div style={styles.chartTitle}>Water consumption</div>
-                    <div style={styles.chart}>
-                        <div style={styles.barGroup}>
-                            <div style={styles.bar.blue} />
-                            <div style={styles.bar.green} />
-                            <div style={styles.bar.orange} />
+                <section style={styles.cardRight}>
+                    <div style={styles.gridR}>
+                        <div style={styles.chartTitleRight}>Water consumption</div>
+                        <div style={styles.chart}>
+                            <div style={styles.barGroup}>
+                                <div style={styles.bar.blue} />
+                                <div style={styles.bar.green} />
+                                <div style={styles.bar.orange} />
+                            </div>
+                            <div style={styles.chartTextRight}>An avergage Human should
+                                consume at least 2L of
+                                Water a Day.</div>
                         </div>
-                        <div style={styles.chartText}>Average should consume at least</div>
                     </div>
                 </section>
 
                 {/* Sleep */}
-                <section style={styles.chartCard}>
-                    <div style={styles.chartTitle}>Sleep</div>
-                    <div style={styles.chart}>
-                        <div style={styles.barGroup}>
-                            <div style={styles.bar.blue} />
-                            <div style={styles.bar.green} />
+                <section style={styles.cardLeft}>
+                    <div style={styles.gridL}>
+                        <div style={styles.chartTitleLeft}>Sleep</div>
+                        <div style={styles.chart}>
+                            <div style={styles.barGroup}>
+                                <div style={styles.bar.blue} />
+                                <div style={styles.bar.green} />
+                            </div>
+                            <div style={styles.chartTextLeft}>A good sleep supports your body's efficiency every day.</div>
                         </div>
-                        <div style={styles.chartText}>Supports your every efficiency</div>
-                    </div>
+                        </div>
                 </section>
 
                 {/* Todos */}
-                <section style={styles.chartCard}>
-                    <div style={styles.chartTitle}>Todos</div>
-                    <div style={styles.chart}>
-                        <div style={styles.barGroup}>
-                            <div style={styles.bar.blue} />
-                            <div style={styles.bar.green} />
+                <section style={styles.cardRight}>
+                    <div style={styles.gridR}>
+                        <div style={styles.chartTitleRight}>Todos</div>
+                        <div style={styles.chart}>
+                            <div style={styles.barGroup}>
+                                <div style={styles.bar.blue} />
+                                <div style={styles.bar.green} />
+                            </div>
+                            <div style={styles.chartTextRight}>Setting up todos is a great way to prevent procrastination.</div>
                         </div>
-                        <div style={styles.chartText}>Setting todos is a great way to procrastination</div>
                     </div>
                 </section>
 
                 {/* Mood */}
-                <section style={styles.chartCard}>
-                    <div style={styles.chartTitle}>Daily Mood</div>
-                    <div style={styles.chart}>
-                        <div style={styles.barGroup}>
-                            <div style={styles.bar.blue} />
-                            <div style={styles.bar.green} />
-                            <div style={styles.bar.orange} />
+                <section style={styles.cardLeft}>
+                    <div style={styles.gridL}>
+                        <div style={styles.chartTitleLeft}>Daily Mood</div>
+                        <div style={styles.chart}>
+                            <div style={styles.barGroup}>
+                                <div style={styles.bar.blue} />
+                                <div style={styles.bar.green} />
+                                <div style={styles.bar.orange} />
+                            </div>
+                            <div style={styles.chartTextLeft}>Your daily mood can help you by archiving your goals quicker.</div>
                         </div>
-                        <div style={styles.chartText}>Your daily mood can help you meet your goals quicker</div>
                     </div>
                 </section>
             </div>
@@ -107,10 +118,24 @@ const styles = {
     },
     grid: {
         display: "grid",
-        gridTemplateColumns: " 1fr 5fr",
+        gridTemplateColumns: " 2fr 4.5fr",
         gridTemplateRows: "1fr",
         gap: "20px",
         height: "calc(75vh - 120px)",
+    },
+    gridR: {
+        display: "grid",
+        gridTemplateColumns: " 3fr 2fr",
+        gridTemplateRows: "1fr 5fr",
+        gap: "20px",
+        height: "calc(105vh - 260px)",
+    },
+    gridL: {
+        display: "grid",
+        gridTemplateColumns: " 2fr 3fr",
+        gridTemplateRows: "1fr",
+        gap: "20px",
+        height: "calc(105vh - 260px)",
     },
     cardGood: {
         borderRadius: "20px",
@@ -121,10 +146,20 @@ const styles = {
         justifyContent: "center",
         overflow: "hidden",
     },
+    logoGood: {
+        gridColumn: "2 / 4",
+        gridRow: "1",
+        fontSize: "75px",
+        fontWeight: "300",
+        textAlign: "top",
+        justifyContent: "top",
+        padding: "16px",
+    },
     cardPicture: {
-        gridColumn: "1 / 7",
+        gridColumn: "1",
         padding: "16px",
         display: "flex",
+        borderRight: "2px solid #000",
         overflow: "hidden",
         justifyContent: "flex-end",
         alignItems: "flex-end",
@@ -139,22 +174,45 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         gap: '30px',
-        maxWidth: '500px',
+        paddingTop: '30px',
         margin: '0 auto',
     },
-    chartCard: {
-        background: 'white',
-        borderRadius: '20px',
-        padding: '30px',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
-        borderLeft: '6px solid #667eea',
+    cardRight: {
+        borderRadius: "20px",
+        border: "2px solid #000",
+        fontSize: "30px",
+        fontWeight: "500",
+        display: "flex",
+        padding: "16px",
+        justifyContent: "center",
+        overflow: "hidden",
     },
-    chartTitle: {
+    cardLeft: {
+        borderRadius: "20px",
+        border: "2px solid #000",
+        fontSize: "30px",
+        fontWeight: "500",
+        display: "flex",
+        padding: "16px",
+        justifyContent: "center",
+        overflow: "hidden",
+    },
+    chartTitleRight: {
+        gridColumn: "1",
+        gridRow: "1",
+        fontSize: '1.4em',
+        fontWeight: '500',
+        marginBottom: '25px',
+        textAlign: 'top',
+        paddingLeft: '16px',
+    },
+    chartTitleLeft: {
+        gridColumn: "2",
+        gridRow: "1",
         fontSize: '1.4em',
         fontWeight: '700',
-        color: '#333',
         marginBottom: '25px',
-        textAlign: 'center',
+        textAlign: 'left',
     },
     chart: { textAlign: 'center' },
     barGroup: {
@@ -169,10 +227,26 @@ const styles = {
         borderRadius: '8px 8px 4px 4px',
         margin: '0 5px',
     },
-    chartText: {
-        fontSize: '1em',
-        color: '#666',
+    chartTextLeft: {
+        gridColumn: "1",
+        gridRow: "2",
+        fontSize: '36px',
+        textAlign: 'right',
         lineHeight: '1.5',
+        justifyContent: 'space-between',
+        fontWeight: '300',
+        alignSelf: 'center',
+    },
+    chartTextRight: {
+        gridColumn: "2",
+        gridRow: "2",
+        fontSize: '36px',
+        textAlign: 'left',
+        lineHeight: '1.5',
+        alignSelf: 'center',
+        justifyContent: 'space-between',
+        fontWeight: '300',
+        paddingBottom: '200px',
     },
 };
 
