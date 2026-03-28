@@ -56,7 +56,7 @@ export default function AboutPage() {
 const styles = {
     page: {
         minHeight: "100vh",
-        padding: "1.5vh 1.5vw",
+        padding: "16px",
         boxSizing: "border-box",
         fontFamily: "'Segoe UI', system-ui, sans-serif",
         background: "#fff",
@@ -65,22 +65,21 @@ const styles = {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: "1.2vh 1.2vw",
-        borderRadius: "1vw",
+        padding: "12px 12px",
+        borderRadius: "16px",
         border: "2px solid #000",
-        marginBottom: "1.5vh",
+        marginBottom: "16px",
     },
     logo: {
-        fontSize: "2vw",
+        fontSize: "24px",
         fontWeight: "600",
     },
     menuButton: {
-        borderRadius: "1vw",
+        borderRadius: "16px",
         border: "2px solid #000",
-        padding: "0.7vh 1.2vw",
+        padding: "8px 16px",
         background: "white",
         cursor: "pointer",
-        fontSize: "1vw",
     },
     grid: {
         display: "grid",
