@@ -98,7 +98,7 @@ export default function HomePage() {
 
                 <section
                     style={styles.cardAnalytics}
-                    onClick={() => navigate("/analytics")}
+                    onClick={() => navigate(isAuthenticated ? "/analytics" : "/login")}
                     onMouseEnter={() => setAnalyticsHovered(true)}
                     onMouseLeave={() => setAnalyticsHovered(false)}
                 >
