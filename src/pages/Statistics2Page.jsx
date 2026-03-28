@@ -247,7 +247,6 @@ const StatsPage = () => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const json = await res.json();
 
-                // mood API: 0 = bad, 1 = okay, 2 = good → shift to 1/2/3 for better bar visibility
                 const moodShift = { 0: 1, 1: 2, 2: 3 };
                 const byDate = {};
                 (json.dailyBreakdown || []).forEach(({ date, mood }) => {
