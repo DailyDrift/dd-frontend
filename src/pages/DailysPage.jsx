@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 import { getTodayJournal, saveTodayJournal, patchTodo } from "../api/JournalApi";
 
 
@@ -164,6 +165,7 @@ function TodosCard({ todos, onAdd, onToggle }) {
 
 export default function DailysPage() {
     const navigate = useNavigate();
+    const { isAuthenticated, username, logout } = useAuth();
 
     const [journal, setJournal] = useState({
         waterIntake: 0,
@@ -178,7 +180,6 @@ export default function DailysPage() {
     const isFirstLoad = useRef(true);
     const debounceRef = useRef(null);
 
-    // Fetch today on mount
     useEffect(() => {
         getTodayJournal()
             .then(data => {
@@ -199,9 +200,6 @@ export default function DailysPage() {
             });
     }, []);
 
-    // Auto-save on journal changes (debounced)
-    // Todos with IDs are sent as-is so the backend can update instead of duplicate.
-    // Only todos without an ID are treated as new.
     useEffect(() => {
         if (isFirstLoad.current) return;
 
@@ -210,13 +208,11 @@ export default function DailysPage() {
 
         debounceRef.current = setTimeout(async () => {
             try {
-                // Partial update — only send fields that have a value
                 const payload = {};
                 payload.waterIntake = journal.waterIntake;
                 payload.sleepHours  = journal.sleepHours;
                 payload.workout     = journal.workout;
                 if (journal.mood !== null) payload.mood = journal.mood;
-                // Only include todos array if there are new (unsaved) ones
                 const newTodos = journal.todos.filter(t => !t.id);
                 if (newTodos.length > 0) {
                     payload.todos = newTodos.map(t => ({ content: t.content, done: t.done }));
@@ -231,7 +227,6 @@ export default function DailysPage() {
                         mood:        data.mood        ?? j.mood,
                         sleepHours:  data.sleepHours  ?? j.sleepHours,
                         workout:     data.workout     ?? j.workout,
-                        // Sync back so all todos have their server-assigned IDs
                         todos:       data.todos        ?? j.todos,
                     }));
                 }
@@ -254,18 +249,15 @@ export default function DailysPage() {
         const todo = journal.todos[i];
         const newDone = !todo.done;
 
-        // Optimistic update
         setJournal(j => ({
             ...j,
             todos: j.todos.map((t, idx) => idx === i ? { ...t, done: newDone } : t),
         }));
 
         if (todo.id) {
-            // Todo already exists on the server → PATCH directly, no need to trigger full save
             try {
                 await patchTodo(todo.id, { done: newDone });
             } catch (e) {
-                // Revert on failure
                 setJournal(j => ({
                     ...j,
                     todos: j.todos.map((t, idx) => idx === i ? { ...t, done: !newDone } : t),
@@ -273,7 +265,6 @@ export default function DailysPage() {
                 console.error(e);
             }
         }
-        // If no ID yet, the todo is new and will be saved on the next debounced POST
     };
 
     const syncLabel = { idle: "", saving: "saving…", saved: "✓ Saved", error: "⚠ Error" };
@@ -296,7 +287,19 @@ export default function DailysPage() {
             <header style={styles.header}>
                 <div style={styles.logo} onClick={() => navigate("/")}>Daily Drift</div>
 
-                <button style={styles.menuButton} onClick={() => navigate("/")}>Home</button>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>  {/* NEU: wrapper div */}
+                    {isAuthenticated && username && (
+                        <>
+                            <span style={styles.userInfo}>
+                                Currently logged in as: <strong>{username}</strong>
+                            </span>
+                            <button style={styles.menuButton} onClick={() => { logout(); navigate("/"); }}>
+                                Logout
+                            </button>
+                        </>
+                    )}
+                    <button style={styles.menuButton} onClick={() => navigate("/")}>Home</button>
+                </div>
             </header>
 
             <main style={{ ...styles.grid, position: "relative" }}>
@@ -413,6 +416,11 @@ const styles = {
     menuButton: {
         borderRadius: "16px", border: "2px solid #000",
         padding: "8px 16px", background: "white", cursor: "pointer",
+    },
+    userInfo: {
+        fontSize: "14px",
+        fontWeight: "400",
+        color: "#333",
     },
     grid: {
         display: "grid",

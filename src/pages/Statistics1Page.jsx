@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 import {
     getWaterAnalytics,
     getSleepAnalytics,
@@ -44,6 +45,7 @@ function useCountUp(target, duration = 1200) {
 
 export default function Stat1Page() {
     const navigate = useNavigate();
+    const { isAuthenticated, username, logout } = useAuth();
 
     const [water, setWater] = useState(null);
     const [sleep, setSleep] = useState(null);
@@ -94,7 +96,20 @@ export default function Stat1Page() {
         <div style={styles.page}>
             <header style={styles.header}>
                 <div style={styles.logo} onClick={() => navigate("/")}>Daily Drift</div>
-                <button style={styles.menuButton} onClick={() => navigate("/")}>Home</button>
+
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    {isAuthenticated && username && (
+                        <>
+                            <span style={styles.userInfo}>
+                                Currently logged in as: <strong>{username}</strong>
+                            </span>
+                            <button style={styles.menuButton} onClick={() => { logout(); navigate("/"); }}>
+                                Logout
+                            </button>
+                        </>
+                    )}
+                    <button style={styles.menuButton} onClick={() => navigate("/")}>Home</button>
+                </div>
             </header>
 
             {error && <div style={styles.errorBanner}>{error}</div>}
@@ -117,7 +132,7 @@ export default function Stat1Page() {
                     <span style={styles.cardUnitAna}>Take a deeper look</span>
                 </div>
 
-                {/* todosd */}
+                {/* todos */}
                 <section style={{ ...styles.cardTodo, ...cardFadeStyle(2) }}>
                     <span style={styles.cardTitle}>Todos done</span>
                     <span style={styles.cardValue}>
@@ -179,6 +194,11 @@ const styles = {
         cursor: "pointer",
         fontSize: "15px",
         fontWeight: "500",
+    },
+    userInfo: {
+        fontSize: "14px",
+        fontWeight: "400",
+        color: "#333",
     },
     errorBanner: {
         background: "#fee2e2",
