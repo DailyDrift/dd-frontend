@@ -38,7 +38,6 @@ export default function HomePage() {
             <header style={styles.header}>
                 <div style={styles.logo}>Daily Drift</div>
 
-                {/* NEU: rechts, links vom About-Us-Button */}
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     {isAuthenticated && username && (
                         <>

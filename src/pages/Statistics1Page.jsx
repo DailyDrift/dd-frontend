@@ -132,7 +132,7 @@ export default function Stat1Page() {
                     <span style={styles.cardUnitAna}>Take a deeper look</span>
                 </div>
 
-                {/* todos */}
+                {/* todois */}
                 <section style={{ ...styles.cardTodo, ...cardFadeStyle(2) }}>
                     <span style={styles.cardTitle}>Todos done</span>
                     <span style={styles.cardValue}>
