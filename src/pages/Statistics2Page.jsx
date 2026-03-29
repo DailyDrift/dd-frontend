@@ -75,10 +75,10 @@ const useFadeIn = () => {
     return [ref, visible];
 };
 
-const BarChart = ({ data, labels, yAxisLabels, yTicks = 5 }) => {
+const BarChart = ({ data, labels, yAxisLabels, yTicks = 5, animated = false }) => {
     const width = 700;
     const height = 220;
-    const paddingLeft = 44;
+    const paddingLeft = 72;
     const paddingRight = 12;
     const paddingTop = 12;
     const paddingBottom = 40;
@@ -129,6 +129,14 @@ const BarChart = ({ data, labels, yAxisLabels, yTicks = 5 }) => {
                     rx={3}
                     fill={data.color}
                     opacity={val === 0 ? 0.15 : 0.85}
+                    style={{
+                        transformBox: 'fill-box',
+                        transformOrigin: 'bottom',
+                        transform: animated ? 'scaleY(1)' : 'scaleY(0)',
+                        transition: animated
+                            ? `transform 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) ${i * 20}ms`
+                            : 'none',
+                    }}
                 />
             ))}
 
@@ -168,7 +176,7 @@ const ChartCard = ({ chartConfig, align, loading, moodLabels, yTicks }) => {
                     {loading && <div style={styles.loadingBadge}>Lädt…</div>}
                 </div>
                 <div style={styles.chartSide}>
-                    <BarChart data={chartConfig} labels={last30Days.map(d => d.label)} yAxisLabels={moodLabels} yTicks={yTicks} />
+                    <BarChart data={chartConfig} labels={last30Days.map(d => d.label)} yAxisLabels={moodLabels} yTicks={yTicks} animated={visible} />
                 </div>
             </div>
         </section>
@@ -201,8 +209,8 @@ const StatsPage = () => {
     const [sleepError, setSleepError] = useState(null);
 
     const [todoData, setTodoData] = useState({
-        label: "ToDos Done",
-        unit: "",
+        label: "Todos",
+        unit: " done",
         yMax: 10,
         color: "#27AE60",
         description: "Setting up todos is a great way to prevent procrastination.",
@@ -279,7 +287,6 @@ const StatsPage = () => {
             } catch (err) {
                 setTodoError(err.message);
             } finally {
-                setTodoLoading(false);
                 setTodoLoading(false);
             }
         };
