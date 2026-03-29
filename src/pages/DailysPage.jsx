@@ -7,33 +7,36 @@ import { getTodayJournal, saveTodayJournal, patchTodo } from "../api/JournalApi"
 
 function useDebounced(committed, onCommit, delay = 600) {
     const [local, setLocal] = useState(committed);
+    const latestRef = useRef(committed);
     const timerRef = useRef(null);
 
     const prevCommitted = useRef(committed);
     useEffect(() => {
         if (prevCommitted.current !== committed) {
             prevCommitted.current = committed;
+            latestRef.current = committed;
             setLocal(committed);
         }
     }, [committed]);
 
     const change = (newVal) => {
+        latestRef.current = newVal;
         setLocal(newVal);
         clearTimeout(timerRef.current);
         timerRef.current = setTimeout(() => {
-            prevCommitted.current = newVal;
-            onCommit(newVal);
+            prevCommitted.current = latestRef.current;
+            onCommit(latestRef.current);
         }, delay);
     };
 
     useEffect(() => () => clearTimeout(timerRef.current), []);
 
-    return [local, change];
+    return [local, change, latestRef];
 }
 
 function WaterCard({ value, onChange }) {
     const step = 0.25, max = 6;
-    const [local, setLocal] = useDebounced(value, onChange, 600);
+    const [local, setLocal, localRef] = useDebounced(value, onChange, 600);
     const pct = Math.min(local / max, 1);
 
     return (
@@ -44,9 +47,9 @@ function WaterCard({ value, onChange }) {
                 <span style={c.waterText}>{local.toFixed(2)} L</span>
             </div>
             <div style={c.row}>
-                <button style={c.circleBtn} onClick={() => setLocal(Math.max(0, +(local - step).toFixed(2)))}>−</button>
+                <button style={c.circleBtn} onClick={() => setLocal(Math.max(0, +(localRef.current - step).toFixed(2)))}>−</button>
                 <span style={c.hint}>±0.25 L</span>
-                <button style={c.circleBtn} onClick={() => setLocal(Math.min(max, +(local + step).toFixed(2)))}>+</button>
+                <button style={c.circleBtn} onClick={() => setLocal(Math.min(max, +(localRef.current + step).toFixed(2)))}>+</button>
             </div>
             <span style={c.glassHint}>0.25l ≈ 1 Glass of Water</span>
         </div>
@@ -85,7 +88,7 @@ function MoodCard({ value, onChange }) {
 }
 
 function SleepCard({ value, onChange }) {
-    const [local, setLocal] = useDebounced(value, onChange, 600);
+    const [local, setLocal, localRef] = useDebounced(value, onChange, 600);
     const r = 44, cx = 60, cy = 60;
     const pct = local / 24;
     const angle = pct * 2 * Math.PI - Math.PI / 2;
@@ -106,9 +109,9 @@ function SleepCard({ value, onChange }) {
                 <text x={cx} y={cy + 7} textAnchor="middle" fontSize="17" fontWeight="700" fill="#222">{local}h</text>
             </svg>
             <div style={c.row}>
-                <button style={c.circleBtn} onClick={() => setLocal(Math.max(0, +(local - 0.5).toFixed(1)))}>−</button>
+                <button style={c.circleBtn} onClick={() => setLocal(Math.max(0, +(localRef.current - 0.5).toFixed(1)))}>−</button>
                 <span style={c.hint}>±0.5 h</span>
-                <button style={c.circleBtn} onClick={() => setLocal(Math.min(24, +(local + 0.5).toFixed(1)))}>+</button>
+                <button style={c.circleBtn} onClick={() => setLocal(Math.min(24, +(localRef.current + 0.5).toFixed(1)))}>+</button>
             </div>
         </div>
     );
@@ -223,11 +226,7 @@ export default function DailysPage() {
                 if (data) {
                     setJournal(j => ({
                         ...j,
-                        waterIntake: data.waterIntake ?? j.waterIntake,
-                        mood:        data.mood        ?? j.mood,
-                        sleepHours:  data.sleepHours  ?? j.sleepHours,
-                        workout:     data.workout     ?? j.workout,
-                        todos:       data.todos        ?? j.todos,
+                        todos: data.todos ?? j.todos,
                     }));
                 }
 
@@ -287,7 +286,7 @@ export default function DailysPage() {
             <header style={styles.header}>
                 <div style={styles.logo} onClick={() => navigate("/")}>Daily Drift</div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>  {/* NEU: wrapper div */}
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     {isAuthenticated && username && (
                         <>
                             <span style={styles.userInfo}>
