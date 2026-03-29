@@ -1,5 +1,12 @@
 # React + Vite
 
+## Cloning the Repository
+
+```bash
+git clone https://github.com/DailyDrift/dd-frontend
+cd dd-frontend
+```
+
 ## Setting up the project
 
 ```bash
