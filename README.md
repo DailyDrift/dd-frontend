@@ -20,3 +20,4 @@ $ npm run dev
 ```
 
 The website can then be access via `localhost:5173`.
+The account `testuser2:testuser2` (`username:password`) can be used for testing purposes (contains example data).
