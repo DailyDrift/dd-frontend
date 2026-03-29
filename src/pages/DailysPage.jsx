@@ -1,31 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { getTodayJournal, saveTodayJournal, patchTodo } from "../api/JournalApi";
 
-// ─── API ──────────────────────────────────────────────────────────────────────
 
-const API_BASE = "http://localhost:3000";
-const authHeader = () => ({
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-});
-
-const saveJournal = (payload) =>
-    fetch(`${API_BASE}/v1/journal/today`, {
-        method: "POST",
-        headers: authHeader(),
-        body: JSON.stringify(payload),
-    });
-
-// ─── useDebounced ─────────────────────────────────────────────────────────────
-// Hält einen lokalen Anzeigewert und gibt den "committed" Wert erst nach
-// `delay` ms Ruhe weiter – verhindert zu viele State-Updates beim Klicken.
 
 function useDebounced(committed, onCommit, delay = 600) {
     const [local, setLocal] = useState(committed);
     const timerRef = useRef(null);
 
-    // Falls der Parent-Wert sich von außen ändert (z.B. nach API-Load),
-    // übernehmen wir ihn ohne Debounce.
     const prevCommitted = useRef(committed);
     useEffect(() => {
         if (prevCommitted.current !== committed) {
@@ -48,8 +30,6 @@ function useDebounced(committed, onCommit, delay = 600) {
     return [local, change];
 }
 
-// ─── Water Card ───────────────────────────────────────────────────────────────
-
 function WaterCard({ value, onChange }) {
     const step = 0.25, max = 6;
     const [local, setLocal] = useDebounced(value, onChange, 600);
@@ -71,8 +51,6 @@ function WaterCard({ value, onChange }) {
         </div>
     );
 }
-
-// ─── Mood Card ────────────────────────────────────────────────────────────────
 
 const MOODS = [
     { label: "bad",  emoji: "😞", value: 0, color: "#E74C3C" },
@@ -105,8 +83,6 @@ function MoodCard({ value, onChange }) {
     );
 }
 
-// ─── Sleep Card ───────────────────────────────────────────────────────────────
-
 function SleepCard({ value, onChange }) {
     const [local, setLocal] = useDebounced(value, onChange, 600);
     const r = 44, cx = 60, cy = 60;
@@ -137,8 +113,6 @@ function SleepCard({ value, onChange }) {
     );
 }
 
-// ─── Todos Card ───────────────────────────────────────────────────────────────
-
 function TodosCard({ todos, onAdd, onToggle }) {
     const [input, setInput] = useState("");
 
@@ -163,8 +137,10 @@ function TodosCard({ todos, onAdd, onToggle }) {
             </div>
             <div style={c.todoList}>
                 {todos.length === 0 && <div style={c.emptyHint}>No Todos</div>}
-                {todos.map((todo, i) => (
-                    <div key={i} style={c.todoItem} onClick={() => onToggle(i)}>
+                {[...todos.map((todo, i) => ({ todo, i }))]
+                    .sort((a, b) => a.todo.done - b.todo.done)
+                    .map(({ todo, i }) => (
+                        <div key={todo.id ?? `new-${i}`} style={c.todoItem} onClick={() => onToggle(i)}>
                         <span style={{
                             ...c.todoCheck,
                             background: todo.done ? "#27AE60" : "transparent",
@@ -172,21 +148,19 @@ function TodosCard({ todos, onAdd, onToggle }) {
                         }}>
                             {todo.done && "✓"}
                         </span>
-                        <span style={{
-                            fontSize: "13px",
-                            textDecoration: todo.done ? "line-through" : "none",
-                            color: todo.done ? "#aaa" : "#222",
-                        }}>
+                            <span style={{
+                                fontSize: "13px",
+                                textDecoration: todo.done ? "line-through" : "none",
+                                color: todo.done ? "#aaa" : "#222",
+                            }}>
                             {todo.content}
                         </span>
-                    </div>
-                ))}
+                        </div>
+                    ))}
             </div>
         </div>
     );
 }
-
-// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function DailysPage() {
     const navigate = useNavigate();
@@ -200,14 +174,13 @@ export default function DailysPage() {
     });
 
     const [loadingToday, setLoadingToday] = useState(true);
-    const [syncStatus, setSyncStatus] = useState("idle"); // idle | saving | saved | error
+    const [syncStatus, setSyncStatus] = useState("idle");
     const isFirstLoad = useRef(true);
     const debounceRef = useRef(null);
 
     // Fetch today on mount
     useEffect(() => {
-        fetch(`${API_BASE}/v1/journal/today`, { headers: authHeader() })
-            .then(r => r.ok ? r.json() : null)
+        getTodayJournal()
             .then(data => {
                 if (data) {
                     setJournal({
@@ -226,7 +199,9 @@ export default function DailysPage() {
             });
     }, []);
 
-    // Auto-save with 800ms debounce whenever journal changes
+    // Auto-save on journal changes (debounced)
+    // Todos with IDs are sent as-is so the backend can update instead of duplicate.
+    // Only todos without an ID are treated as new.
     useEffect(() => {
         if (isFirstLoad.current) return;
 
@@ -235,21 +210,32 @@ export default function DailysPage() {
 
         debounceRef.current = setTimeout(async () => {
             try {
-                const res = await saveJournal(journal);
-                // Sync back server response to get todo IDs
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data) {
-                        setJournal(j => ({
-                            ...j,
-                            waterIntake: data.waterIntake ?? j.waterIntake,
-                            mood:        data.mood        ?? j.mood,
-                            sleepHours:  data.sleepHours  ?? j.sleepHours,
-                            workout:     data.workout     ?? j.workout,
-                            todos:       data.todos        ?? j.todos,
-                        }));
-                    }
+                // Partial update — only send fields that have a value
+                const payload = {};
+                payload.waterIntake = journal.waterIntake;
+                payload.sleepHours  = journal.sleepHours;
+                payload.workout     = journal.workout;
+                if (journal.mood !== null) payload.mood = journal.mood;
+                // Only include todos array if there are new (unsaved) ones
+                const newTodos = journal.todos.filter(t => !t.id);
+                if (newTodos.length > 0) {
+                    payload.todos = newTodos.map(t => ({ content: t.content, done: t.done }));
                 }
+
+                const data = await saveTodayJournal(payload);
+
+                if (data) {
+                    setJournal(j => ({
+                        ...j,
+                        waterIntake: data.waterIntake ?? j.waterIntake,
+                        mood:        data.mood        ?? j.mood,
+                        sleepHours:  data.sleepHours  ?? j.sleepHours,
+                        workout:     data.workout     ?? j.workout,
+                        // Sync back so all todos have their server-assigned IDs
+                        todos:       data.todos        ?? j.todos,
+                    }));
+                }
+
                 setSyncStatus("saved");
                 setTimeout(() => setSyncStatus("idle"), 2000);
             } catch {
@@ -275,12 +261,9 @@ export default function DailysPage() {
         }));
 
         if (todo.id) {
+            // Todo already exists on the server → PATCH directly, no need to trigger full save
             try {
-                await fetch(`${API_BASE}/v1/journal/todos/${todo.id}`, {
-                    method: "PATCH",
-                    headers: authHeader(),
-                    body: JSON.stringify({ done: newDone }),
-                });
+                await patchTodo(todo.id, { done: newDone });
             } catch (e) {
                 // Revert on failure
                 setJournal(j => ({
@@ -290,18 +273,29 @@ export default function DailysPage() {
                 console.error(e);
             }
         }
+        // If no ID yet, the todo is new and will be saved on the next debounced POST
     };
 
-    const syncLabel = { idle: "", saving: "saving…", error: "⚠ Error" };
+    const syncLabel = { idle: "", saving: "saving…", saved: "✓ Saved", error: "⚠ Error" };
     const syncColor = { idle: "transparent", saving: "#999", saved: "#27AE60", error: "#E74C3C" };
 
     return (
         <div style={styles.page}>
+            <style>{`
+                @keyframes cardFadeIn {
+                    from { opacity: 0; filter: blur(12px); transform: translateY(8px); }
+                    to   { opacity: 1; filter: blur(0px);  transform: translateY(0px); }
+                }
+                .dd-card { animation: cardFadeIn 0.8s ease forwards; opacity: 0; }
+                .dd-card:nth-child(1) { animation-delay: 0.1s; }
+                .dd-card:nth-child(2) { animation-delay: 0.25s; }
+                .dd-card:nth-child(3) { animation-delay: 0.4s; }
+                .dd-card:nth-child(4) { animation-delay: 0.55s; }
+                .dd-card:nth-child(5) { animation-delay: 0.7s; }
+            `}</style>
             <header style={styles.header}>
                 <div style={styles.logo} onClick={() => navigate("/")}>Daily Drift</div>
-                <span style={{ fontSize: "13px", color: syncColor[syncStatus], transition: "color 0.3s", fontWeight: 500 }}>
-                    {syncLabel[syncStatus]}
-                </span>
+
                 <button style={styles.menuButton} onClick={() => navigate("/")}>Home</button>
             </header>
 
@@ -312,23 +306,23 @@ export default function DailysPage() {
                     </div>
                 )}
 
-                <section style={styles.cardWater}>
+                <section className="dd-card" style={styles.cardWater}>
                     <WaterCard value={journal.waterIntake} onChange={v => update("waterIntake", v)} />
                 </section>
 
-                <section style={styles.cardMood}>
+                <section className="dd-card" style={styles.cardMood}>
                     <MoodCard value={journal.mood} onChange={v => update("mood", v)} />
                 </section>
 
-                <section style={styles.cardTodos}>
+                <section className="dd-card" style={styles.cardTodos}>
                     <TodosCard todos={journal.todos} onAdd={addTodo} onToggle={toggleTodo} />
                 </section>
 
-                <section style={styles.cardSleep}>
+                <section className="dd-card" style={styles.cardSleep}>
                     <SleepCard value={journal.sleepHours} onChange={v => update("sleepHours", v)} />
                 </section>
 
-                <section style={styles.cardAnalytics} onClick={() => navigate("/analytics")}>
+                <section className="dd-card" style={styles.cardAnalytics} onClick={() => navigate("/analytics")}>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
                         <span style={{ fontSize: "30px", fontWeight: 600 }}>Analytics</span>
                     </div>
@@ -337,8 +331,6 @@ export default function DailysPage() {
         </div>
     );
 }
-
-// ─── Card styles ──────────────────────────────────────────────────────────────
 
 const c = {
     cardInner: {
@@ -406,8 +398,6 @@ const c = {
     glassHint: { fontSize: "11px", color: "#999", textAlign: "center" },
     emptyHint: { fontSize: "13px", color: "#bbb", textAlign: "center", marginTop: "8px" },
 };
-
-// ─── Page styles ──────────────────────────────────────────────────────────────
 
 const styles = {
     page: {
