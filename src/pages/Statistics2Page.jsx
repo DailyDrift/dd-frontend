@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import gardenBg from "../assets/garden.jpg";
-
-// ─── API CONFIG ───────────────────────────────────────────────────────────────
-
-const API_BASE = "http://localhost:3000";
-
-// ─── STATIC CHART DATA (Sleep, Todos, Mood – noch hardcoded) ─────────────────
+import {
+    getWaterAnalytics,
+    getSleepAnalytics,
+    getTodosAnalytics,
+    getMoodAnalytics,
+} from "../api/AnalyticsApi";
 
 const today = new Date();
 const last30Days = Array.from({ length: 30 }, (_, i) => {
@@ -17,10 +17,6 @@ const last30Days = Array.from({ length: 30 }, (_, i) => {
         label: `${d.getDate()}.${d.getMonth() + 1}`,
     };
 });
-
-
-
-// ─── Bar Chart Component ──────────────────────────────────────────────────────
 
 const BarChart = ({ data, labels, yAxisLabels, yTicks = 5 }) => {
     const width = 700;
@@ -84,14 +80,12 @@ const BarChart = ({ data, labels, yAxisLabels, yTicks = 5 }) => {
     );
 };
 
-// ─── Chart Card ───────────────────────────────────────────────────────────────
-
 const ChartCard = ({ chartConfig, align, loading, moodLabels, yTicks }) => {
     const isRight = align === 'right';
     return (
         <section style={styles.card}>
             <div style={{ ...styles.cardInner, flexDirection: isRight ? 'row' : 'row-reverse' }}>
-                <div style={styles.textSide}>
+                <div style={{ ...styles.textSide, alignItems: isRight ? 'flex-end' : 'flex-start' }}>
                     <div style={styles.chartTitle}>{chartConfig.label}</div>
                     <div style={styles.chartDesc}>{chartConfig.description}</div>
                     {loading && <div style={styles.loadingBadge}>Lädt…</div>}
@@ -103,8 +97,6 @@ const ChartCard = ({ chartConfig, align, loading, moodLabels, yTicks }) => {
         </section>
     );
 };
-
-// ─── Main Page ────────────────────────────────────────────────────────────────
 
 const StatsPage = () => {
     let navigate = useNavigate();
@@ -142,7 +134,6 @@ const StatsPage = () => {
     const [todoLoading, setTodoLoading] = useState(true);
     const [todoError, setTodoError] = useState(null);
 
-    // Mood: 0 = bad, 1 = okay, 2 = good
     const [moodData, setMoodData] = useState({
         label: "Daily Mood",
         unit: "",
@@ -157,23 +148,13 @@ const StatsPage = () => {
     useEffect(() => {
         const fetchWater = async () => {
             try {
-                const token = localStorage.getItem('accessToken');
-                const res = await fetch(`${API_BASE}/v1/analytics/water`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const json = await res.json();
-
-                // dailyBreakdown nach Datum indexieren
+                const json = await getWaterAnalytics();
                 const byDate = {};
                 (json.dailyBreakdown || []).forEach(({ date, waterIntake }) => {
                     byDate[date] = waterIntake;
                 });
-
-                // Für jeden der letzten 30 Tage den Wert holen (0 wenn kein Eintrag)
                 const values = last30Days.map(({ key }) => byDate[key] ?? 0);
                 const maxVal = Math.max(...values, 4);
-
                 setWaterData(prev => ({ ...prev, values, yMax: Math.ceil(maxVal) }));
                 setWaterError(null);
             } catch (err) {
@@ -185,21 +166,13 @@ const StatsPage = () => {
 
         const fetchSleep = async () => {
             try {
-                const token = localStorage.getItem('accessToken');
-                const res = await fetch(`${API_BASE}/v1/analytics/sleep`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const json = await res.json();
-
+                const json = await getSleepAnalytics();
                 const byDate = {};
                 (json.dailyBreakdown || []).forEach(({ date, sleepHours }) => {
                     byDate[date] = sleepHours;
                 });
-
                 const values = last30Days.map(({ key }) => byDate[key] ?? 0);
                 const maxVal = Math.max(...values, 12);
-
                 setSleepData(prev => ({ ...prev, values, yMax: Math.ceil(maxVal) }));
                 setSleepError(null);
             } catch (err) {
@@ -209,26 +182,15 @@ const StatsPage = () => {
             }
         };
 
-        fetchWater();
-        fetchSleep();
-
         const fetchTodo = async () => {
             try {
-                const token = localStorage.getItem('accessToken');
-                const res = await fetch(`${API_BASE}/v1/analytics/todos`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const json = await res.json();
-
+                const json = await getTodosAnalytics();
                 const byDate = {};
                 (json.dailyBreakdown || []).forEach(({ date, completed }) => {
                     byDate[date] = completed;
                 });
-
                 const values = last30Days.map(({ key }) => byDate[key] ?? 0);
                 const maxVal = Math.max(...values, 5);
-
                 setTodoData(prev => ({ ...prev, values, yMax: Math.ceil(maxVal) }));
                 setTodoError(null);
             } catch (err) {
@@ -240,21 +202,13 @@ const StatsPage = () => {
 
         const fetchMood = async () => {
             try {
-                const token = localStorage.getItem('accessToken');
-                const res = await fetch(`${API_BASE}/v1/analytics/mood`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const json = await res.json();
-
+                const json = await getMoodAnalytics();
                 const moodShift = { 0: 1, 1: 2, 2: 3 };
                 const byDate = {};
                 (json.dailyBreakdown || []).forEach(({ date, mood }) => {
                     byDate[date] = moodShift[mood] ?? null;
                 });
-
                 const values = last30Days.map(({ key }) => byDate[key] ?? 0);
-
                 setMoodData(prev => ({ ...prev, values, yMax: 3 }));
                 setMoodError(null);
             } catch (err) {
@@ -264,6 +218,8 @@ const StatsPage = () => {
             }
         };
 
+        fetchWater();
+        fetchSleep();
         fetchTodo();
         fetchMood();
     }, []);
@@ -304,7 +260,6 @@ const StatsPage = () => {
         </div>
     );
 };
-
 
 const styles = {
     page: {
@@ -390,14 +345,29 @@ const styles = {
         alignItems: 'center',
     },
     textSide: {
-        minWidth: '180px',
-        maxWidth: '200px',
-        flexShrink: 0,
+        flex: '1 0 0',
+        minWidth: 0,
     },
-    chartTitle: { fontSize: '20px', fontWeight: '600', marginBottom: '10px' },
-    chartDesc: { fontSize: '13px', fontWeight: '300', lineHeight: '1.6', color: '#555' },
-    loadingBadge: { marginTop: '8px', fontSize: '11px', color: '#999', fontStyle: 'italic' },
-    chartSide: { flex: 1, minWidth: 0 },
+    chartTitle: {
+        fontSize: '27px',
+        fontWeight: '600',
+        marginBottom: '10px'
+    },
+    chartDesc: {
+        fontSize: '20px',
+        fontWeight: '300',
+        lineHeight: '1.6',
+        color: '#555'
+    },
+    loadingBadge: {
+        marginTop: '8px',
+        fontSize: '11px', color: '#999',
+        fontStyle: 'italic'
+    },
+    chartSide: {
+        flex: '2 0 0',
+        minWidth: 0,
+    },
 };
 
 export default StatsPage;
