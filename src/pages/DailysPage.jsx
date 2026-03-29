@@ -224,10 +224,6 @@ export default function DailysPage() {
                 const data = await saveTodayJournal(payload);
 
                 if (data) {
-                    // Only update todos from the server response (to pick up server-assigned IDs).
-                    // Do NOT overwrite waterIntake / sleepHours / mood / workout — the server just
-                    // echoes them back, and overwriting would reset any changes the user made
-                    // while the request was in-flight.
                     setJournal(j => ({
                         ...j,
                         todos: data.todos ?? j.todos,
