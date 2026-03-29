@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from "react-router-dom";
 import gardenBg from "../assets/garden.jpg";
 import {
@@ -17,6 +17,63 @@ const last30Days = Array.from({ length: 30 }, (_, i) => {
         label: `${d.getDate()}.${d.getMonth() + 1}`,
     };
 });
+
+const avg = (arr) => arr.filter(v => v > 0).reduce((s, v) => s + v, 0) / (arr.filter(v => v > 0).length || 1);
+
+const getMotivationalQuote = (water, sleep, todos, mood) => {
+    const waterAvg  = avg(water.values);   // goal: 2L
+    const sleepAvg  = avg(sleep.values);   // goal: 8h
+    const todoAvg   = avg(todos.values);   // more = better
+    const moodAvg   = avg(mood.values);    // 1–3, goal: 3
+
+    const score =
+        (waterAvg >= 2   ? 1 : waterAvg >= 1   ? 0.5 : 0) +
+        (sleepAvg >= 7.5 ? 1 : sleepAvg >= 6   ? 0.5 : 0) +
+        (todoAvg  >= 3   ? 1 : todoAvg  >= 1   ? 0.5 : 0) +
+        (moodAvg  >= 2.5 ? 1 : moodAvg  >= 1.5 ? 0.5 : 0);
+
+    // score: 0–4
+    if (score >= 3.5) return "You're absolutely crushing it. Keep going!";
+    if (score >= 3.0) return "You did great this month. Stay consistent!";
+    if (score >= 2.5) return "Solid month – you're building great habits!";
+    if (score >= 2.0) return "Good effort! Every step forward counts.";
+    if (score >= 1.5) return "You showed up. That's already half the battle.";
+    if (score >= 1.0) return "Tough month? No worries – tomorrow is a fresh start.";
+    return "The best time to start is now. You've got this!";
+};
+
+const useTypewriter = (text, speed = 60) => {
+    const [displayed, setDisplayed] = useState('');
+
+    useEffect(() => {
+        setDisplayed('');
+        let i = 0;
+        const interval = setInterval(() => {
+            setDisplayed(text.slice(0, i + 1));
+            i++;
+            if (i >= text.length) clearInterval(interval);
+        }, speed);
+        return () => clearInterval(interval);
+    }, [text, speed]);
+
+    return displayed;
+};
+
+const useFadeIn = () => {
+    const ref = useRef(null);
+    const [visible, setVisible] = useState(false);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => { if (entry.isIntersecting) setVisible(true); },
+            { threshold: 0.15 }
+        );
+        if (ref.current) observer.observe(ref.current);
+        return () => observer.disconnect();
+    }, []);
+
+    return [ref, visible];
+};
 
 const BarChart = ({ data, labels, yAxisLabels, yTicks = 5 }) => {
     const width = 700;
@@ -82,8 +139,18 @@ const BarChart = ({ data, labels, yAxisLabels, yTicks = 5 }) => {
 
 const ChartCard = ({ chartConfig, align, loading, moodLabels, yTicks }) => {
     const isRight = align === 'right';
+    const [ref, visible] = useFadeIn();
+
     return (
-        <section style={styles.card}>
+        <section
+            ref={ref}
+            style={{
+                ...styles.card,
+                opacity: visible ? 1 : 0,
+                transform: visible ? 'translateY(0)' : 'translateY(32px)',
+                transition: 'opacity 1.2s ease, transform 1.2s ease',
+            }}
+        >
             <div style={{ ...styles.cardInner, flexDirection: isRight ? 'row' : 'row-reverse' }}>
                 <div style={{ ...styles.textSide, alignItems: isRight ? 'flex-end' : 'flex-start' }}>
                     <div style={styles.chartTitle}>{chartConfig.label}</div>
@@ -144,6 +211,12 @@ const StatsPage = () => {
     });
     const [moodLoading, setMoodLoading] = useState(true);
     const [moodError, setMoodError] = useState(null);
+
+    const allLoaded = !waterLoading && !sleepLoading && !todoLoading && !moodLoading;
+    const motto = allLoaded
+        ? getMotivationalQuote(waterData, sleepData, todoData, moodData)
+        : '';
+    const typedMotto = useTypewriter(motto);
 
     useEffect(() => {
         const fetchWater = async () => {
@@ -234,7 +307,11 @@ const StatsPage = () => {
             <section style={styles.cardGood}>
                 <div style={styles.grid}>
                     <section style={styles.cardPicture}></section>
-                    <section style={styles.logoGood}>You did good this Month!</section>
+                    <section style={styles.logoGood}>
+                        {typedMotto}
+                        <span style={{ borderRight: '3px solid #000', marginLeft: '4px', animation: 'blink 0.8s step-end infinite' }} />
+                        <style>{`@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }`}</style>
+                    </section>
                 </div>
             </section>
 
@@ -291,15 +368,15 @@ const styles = {
     grid: {
         display: 'grid',
         gridTemplateColumns: '2fr 4.5fr',
-        gap: '20px',
-        height: 'calc(75vh - 120px)',
+        gap: '0px',
+        height: '100%',
+        width: '100%',
     },
     cardGood: {
         borderRadius: '20px',
         border: '2px solid #000',
-        display: 'flex',
-        justifyContent: 'center',
         overflow: 'hidden',
+        height: 'calc(75vh - 120px)',
     },
     logoGood: {
         gridColumn: '2 / 4',
@@ -313,6 +390,7 @@ const styles = {
         gridColumn: '1',
         borderRight: '2px solid #000',
         overflow: 'hidden',
+        height: '100%',
         backgroundImage: `url(${gardenBg})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
