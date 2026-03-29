@@ -11,7 +11,7 @@ export default function QuotePage() {
         fetch("http://localhost:3000/v1/quotes/quoteOfTheDay")
             .then((res) => res.json())
             .then((data) => {
-                setQuote(data.quote);
+                setQuote("\""+ data.quote + "\"");
                 setAuthor("~" + data.author);
             })
             .catch(() => {
@@ -137,6 +137,7 @@ const styles = {
         border: "2px solid #000",
         padding: "16px",
         fontSize: "30px",
+        textAlign: "center",
         fontWeight: "600",
         display: "flex",
         justifyContent: "center",
