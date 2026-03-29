@@ -116,8 +116,6 @@ export default function RegisterPage() {
     );
 }
 
-// --- Animation helpers ---
-
 const fadeInKeyframes = `
     @keyframes fadeInUp {
         from {
@@ -135,8 +133,6 @@ const fadeIn = (step) => ({
     animation: `fadeInUp 0.5s ease both`,
     animationDelay: `${(step - 1) * 0.08}s`,
 });
-
-// --- Styles ---
 
 const styles = {
     page: {

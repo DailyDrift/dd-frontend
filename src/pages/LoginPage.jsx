@@ -13,7 +13,6 @@ export default function LoginPage() {
     const { login } = useAuth();
     const navigate  = useNavigate();
 
-    // Einmalig erstellt – Referenz ändert sich nie → Browser startet Animation nicht neu
     const anim = useMemo(() => ({
         2: fadeIn(2),
         3: fadeIn(3),
@@ -107,8 +106,6 @@ export default function LoginPage() {
     );
 }
 
-// --- Animation helpers ---
-
 const fadeInKeyframes = `
     @keyframes fadeInUp {
         from {
@@ -126,8 +123,6 @@ const fadeIn = (step) => ({
     animation: `fadeInUp 0.5s ease both`,
     animationDelay: `${(step - 1) * 0.08}s`,
 });
-
-// --- Styles ---
 
 const styles = {
     page: {
