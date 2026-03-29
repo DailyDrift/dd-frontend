@@ -88,16 +88,26 @@ const BarChart = ({ data, labels, yAxisLabels, yTicks = 5 }) => {
     const barCount = data.values.length;
     const gap = chartWidth / barCount;
     const barWidth = gap * 0.6;
-    const yStep = data.yMax / yTicks;
+    const rawStep = data.yMax / yTicks;
+    const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep || 1)));
+    const normalized = rawStep / magnitude;
+    let niceN;
+    if      (normalized <= 1)   niceN = 1;
+    else if (normalized <= 2)   niceN = 2;
+    else if (normalized <= 2.5) niceN = 2.5;
+    else if (normalized <= 5)   niceN = 5;
+    else                        niceN = 10;
+    const yStep    = niceN * magnitude;
+    const niceYMax = yStep * yTicks;
 
     const getX = (i) => paddingLeft + i * gap + gap / 2;
-    const getY = (val) => paddingTop + chartHeight - (val / data.yMax) * chartHeight;
-    const getBarH = (val) => Math.max(0, (val / data.yMax) * chartHeight);
+    const getY = (val) => paddingTop + chartHeight - (val / niceYMax) * chartHeight;
+    const getBarH = (val) => Math.max(0, (val / niceYMax) * chartHeight);
 
     return (
         <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
             {Array.from({ length: yTicks + 1 }, (_, i) => {
-                const val = i * yStep;
+                const val = parseFloat((i * yStep).toFixed(4));
                 const y = getY(val);
                 return (
                     <g key={i}>
