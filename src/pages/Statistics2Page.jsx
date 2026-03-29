@@ -23,7 +23,7 @@ const avg = (arr) => arr.filter(v => v > 0).reduce((s, v) => s + v, 0) / (arr.fi
 const getMotivationalQuote = (water, sleep, todos, mood) => {
     const waterAvg  = avg(water.values);   // goal: 2L
     const sleepAvg  = avg(sleep.values);   // goal: 8h
-    const todoAvg   = avg(todos.values);   // more = better
+    const todoAvg   = avg(todos.values);
     const moodAvg   = avg(mood.values);    // 1–3, goal: 3
 
     const score =
@@ -32,7 +32,6 @@ const getMotivationalQuote = (water, sleep, todos, mood) => {
         (todoAvg  >= 3   ? 1 : todoAvg  >= 1   ? 0.5 : 0) +
         (moodAvg  >= 2.5 ? 1 : moodAvg  >= 1.5 ? 0.5 : 0);
 
-    // score: 0–4
     if (score >= 3.5) return "You're absolutely crushing it. Keep going!";
     if (score >= 3.0) return "You did great this month. Stay consistent!";
     if (score >= 2.5) return "Solid month – you're building great habits!";
@@ -334,16 +333,16 @@ const StatsPage = () => {
             </section>
 
             {waterError && (
-                <div style={styles.errorBanner}>⚠️ Water-Daten konnten nicht geladen werden: {waterError}</div>
+                <div style={styles.errorBanner}>Water-Daten konnten nicht geladen werden: {waterError}</div>
             )}
             {sleepError && (
-                <div style={styles.errorBanner}>⚠️ Sleep-Daten konnten nicht geladen werden: {sleepError}</div>
+                <div style={styles.errorBanner}>Sleep-Daten konnten nicht geladen werden: {sleepError}</div>
             )}
             {todoError && (
-                <div style={styles.errorBanner}>⚠️ Todo-Daten konnten nicht geladen werden: {todoError}</div>
+                <div style={styles.errorBanner}>Todo-Daten konnten nicht geladen werden: {todoError}</div>
             )}
             {moodError && (
-                <div style={styles.errorBanner}>⚠️ Mood-Daten konnten nicht geladen werden: {moodError}</div>
+                <div style={styles.errorBanner}>Mood-Daten konnten nicht geladen werden: {moodError}</div>
             )}
 
             <div style={styles.chartsContainer}>

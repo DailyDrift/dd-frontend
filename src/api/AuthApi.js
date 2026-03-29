@@ -20,7 +20,7 @@ export const registerRequest = async (username, password) => {
     } catch (err) {
         const data = err.response?.data;
         const msg = Array.isArray(data?.message) ? data.message[0] : data?.message;
-        throw new Error(msg || "Registrierung fehlgeschlagen.");
+        throw new Error(msg || "register failed.");
     }
 };
 
