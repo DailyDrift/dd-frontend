@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 import gardenBg from "../assets/garden.jpg";
 import {
     getWaterAnalytics,
@@ -21,10 +22,10 @@ const last30Days = Array.from({ length: 30 }, (_, i) => {
 const avg = (arr) => arr.filter(v => v > 0).reduce((s, v) => s + v, 0) / (arr.filter(v => v > 0).length || 1);
 
 const getMotivationalQuote = (water, sleep, todos, mood) => {
-    const waterAvg  = avg(water.values);   // goal: 2L
-    const sleepAvg  = avg(sleep.values);   // goal: 8h
+    const waterAvg  = avg(water.values);
+    const sleepAvg  = avg(sleep.values);
     const todoAvg   = avg(todos.values);
-    const moodAvg   = avg(mood.values);    // 1–3, goal: 3
+    const moodAvg   = avg(mood.values);
 
     const score =
         (waterAvg >= 2   ? 1 : waterAvg >= 1   ? 0.5 : 0) +
@@ -184,8 +185,8 @@ const ChartCard = ({ chartConfig, align, loading, moodLabels, yTicks }) => {
 
 const StatsPage = () => {
     let navigate = useNavigate();
+    const { isAuthenticated, username, logout } = useAuth();
 
-    // ── Fade-in for the hero card ──────────────────────────────────────────────
     const [heroRef, heroVisible] = useFadeIn();
 
     const [waterData, setWaterData] = useState({
@@ -321,10 +322,22 @@ const StatsPage = () => {
         <div style={styles.page}>
             <header style={styles.header}>
                 <div style={styles.logo} onClick={() => navigate("/")}>Daily Drift</div>
-                <button style={styles.menuButton} onClick={() => navigate("/")}>Home</button>
+
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    {isAuthenticated && username && (
+                        <>
+                            <span style={styles.userInfo}>
+                                Currently logged in as: <strong>{username}</strong>
+                            </span>
+                            <button style={styles.menuButton} onClick={() => { logout(); navigate("/"); }}>
+                                Logout
+                            </button>
+                        </>
+                    )}
+                    <button style={styles.menuButton} onClick={() => navigate("/")}>Home</button>
+                </div>
             </header>
 
-            {/* ── Hero card with fade-in ───────────────────────────────────────── */}
             <section
                 ref={heroRef}
                 style={{
@@ -344,18 +357,10 @@ const StatsPage = () => {
                 </div>
             </section>
 
-            {waterError && (
-                <div style={styles.errorBanner}>Water-Daten konnten nicht geladen werden: {waterError}</div>
-            )}
-            {sleepError && (
-                <div style={styles.errorBanner}>Sleep-Daten konnten nicht geladen werden: {sleepError}</div>
-            )}
-            {todoError && (
-                <div style={styles.errorBanner}>Todo-Daten konnten nicht geladen werden: {todoError}</div>
-            )}
-            {moodError && (
-                <div style={styles.errorBanner}>Mood-Daten konnten nicht geladen werden: {moodError}</div>
-            )}
+            {waterError && <div style={styles.errorBanner}>Water-Daten konnten nicht geladen werden: {waterError}</div>}
+            {sleepError && <div style={styles.errorBanner}>Sleep-Daten konnten nicht geladen werden: {sleepError}</div>}
+            {todoError  && <div style={styles.errorBanner}>Todo-Daten konnten nicht geladen werden: {todoError}</div>}
+            {moodError  && <div style={styles.errorBanner}>Mood-Daten konnten nicht geladen werden: {moodError}</div>}
 
             <div style={styles.chartsContainer}>
                 <ChartCard chartConfig={waterData} align="right" loading={waterLoading} />
@@ -393,6 +398,11 @@ const styles = {
         background: 'white',
         cursor: 'pointer',
         fontSize: '14px',
+    },
+    userInfo: {
+        fontSize: "14px",
+        fontWeight: "400",
+        color: "#333",
     },
     grid: {
         display: 'grid',
