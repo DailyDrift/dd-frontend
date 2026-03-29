@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import seaBg from "../assets/sea.jpg";
@@ -9,17 +9,17 @@ export default function LoginPage() {
     const [error, setError]       = useState(null);
     const [loading, setLoading]   = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [hasLoaded, setHasLoaded] = useState(false);
 
     const { login } = useAuth();
     const navigate  = useNavigate();
 
-    const anim = useMemo(() => ({
-        2: fadeIn(2),
-        3: fadeIn(3),
-        4: fadeIn(4),
-        5: fadeIn(5),
-        6: fadeIn(6),
-    }), []);
+    useEffect(() => {
+        const t = setTimeout(() => setHasLoaded(true), 1200);
+        return () => clearTimeout(t);
+    }, []);
+
+    const anim = (step) => hasLoaded ? {} : fadeIn(step);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -47,11 +47,11 @@ export default function LoginPage() {
             </header>
 
             <main style={styles.grid}>
-                <div style={{ ...styles.cardLogin, ...anim[2] }}>
+                <div style={{ ...styles.cardLogin, ...anim(2) }}>
                     <form onSubmit={handleSubmit} style={styles.form}>
-                        <div style={{ ...styles.logo2, ...anim[3] }}>Login</div>
+                        <div style={{ ...styles.logo2, ...anim(3) }}>Login</div>
 
-                        <div style={{ ...styles.fieldGroup, ...anim[4] }}>
+                        <div style={{ ...styles.fieldGroup, ...anim(4) }}>
                             <label style={styles.label}>Username</label>
                             <input
                                 type="text"
@@ -62,7 +62,7 @@ export default function LoginPage() {
                             />
                         </div>
 
-                        <div style={{ ...styles.fieldGroup, ...anim[5] }}>
+                        <div style={{ ...styles.fieldGroup, ...anim(5) }}>
                             <label style={styles.label}>Password</label>
                             <div style={styles.inputWrapper}>
                                 <input
@@ -80,7 +80,7 @@ export default function LoginPage() {
 
                         {error && <p style={styles.error}>{error}</p>}
 
-                        <div style={{ ...styles.bottomRow, ...anim[6] }}>
+                        <div style={{ ...styles.bottomRow, ...anim(6) }}>
                             <span style={styles.registerLink} onClick={() => navigate("/register")}>
                                 You don't have an Account?
                             </span>
