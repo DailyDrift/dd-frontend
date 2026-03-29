@@ -1,9 +1,11 @@
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 import rockBg from "../assets/rock.jpg";
 import pondBg from "../assets/pond.jpg";
 
 export default function JournalingPage() {
     let navigate = useNavigate();
+    const { isAuthenticated, username, logout } = useAuth();
 
     return (
         <div style={styles.page}>
@@ -49,9 +51,22 @@ export default function JournalingPage() {
 
             <header style={styles.header}>
                 <div style={styles.logo}>Daily Drift</div>
-                <button style={styles.menuButton} onClick={() => navigate("/")}>
-                    Home
-                </button>
+
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    {isAuthenticated && username && (
+                        <>
+                            <span style={styles.userInfo}>
+                                Currently logged in as: <strong>{username}</strong>
+                            </span>
+                            <button style={styles.menuButton} onClick={logout}>
+                                Logout
+                            </button>
+                        </>
+                    )}
+                    <button style={styles.menuButton} onClick={() => navigate("/")}>
+                        Home
+                    </button>
+                </div>
             </header>
 
             <main style={styles.grid}>
@@ -145,6 +160,11 @@ const styles = {
         padding: "8px 16px",
         background: "white",
         cursor: "pointer",
+    },
+    userInfo: {
+        fontSize: "14px",
+        fontWeight: "400",
+        color: "#333",
     },
     aiNote: {
         gridColumn: "1 / -1",
