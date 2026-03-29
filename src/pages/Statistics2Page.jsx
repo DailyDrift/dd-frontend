@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from "react-router-dom";
 import gardenBg from "../assets/garden.jpg";
-
-// ─── API CONFIG ───────────────────────────────────────────────────────────────
-
-const API_BASE = "http://localhost:3000";
-
-// ─── STATIC CHART DATA (Sleep, Todos, Mood – noch hardcoded) ─────────────────
+import {
+    getWaterAnalytics,
+    getSleepAnalytics,
+    getTodosAnalytics,
+    getMoodAnalytics,
+} from "../api/AnalyticsApi";
 
 const today = new Date();
 const last30Days = Array.from({ length: 30 }, (_, i) => {
@@ -18,14 +18,67 @@ const last30Days = Array.from({ length: 30 }, (_, i) => {
     };
 });
 
+const avg = (arr) => arr.filter(v => v > 0).reduce((s, v) => s + v, 0) / (arr.filter(v => v > 0).length || 1);
 
+const getMotivationalQuote = (water, sleep, todos, mood) => {
+    const waterAvg  = avg(water.values);   // goal: 2L
+    const sleepAvg  = avg(sleep.values);   // goal: 8h
+    const todoAvg   = avg(todos.values);   // more = better
+    const moodAvg   = avg(mood.values);    // 1–3, goal: 3
 
-// ─── Bar Chart Component ──────────────────────────────────────────────────────
+    const score =
+        (waterAvg >= 2   ? 1 : waterAvg >= 1   ? 0.5 : 0) +
+        (sleepAvg >= 7.5 ? 1 : sleepAvg >= 6   ? 0.5 : 0) +
+        (todoAvg  >= 3   ? 1 : todoAvg  >= 1   ? 0.5 : 0) +
+        (moodAvg  >= 2.5 ? 1 : moodAvg  >= 1.5 ? 0.5 : 0);
 
-const BarChart = ({ data, labels, yAxisLabels, yTicks = 5 }) => {
+    // score: 0–4
+    if (score >= 3.5) return "You're absolutely crushing it. Keep going!";
+    if (score >= 3.0) return "You did great this month. Stay consistent!";
+    if (score >= 2.5) return "Solid month – you're building great habits!";
+    if (score >= 2.0) return "Good effort! Every step forward counts.";
+    if (score >= 1.5) return "You showed up. That's already half the battle.";
+    if (score >= 1.0) return "Tough month? No worries – tomorrow is a fresh start.";
+    return "The best time to start is now. You've got this!";
+};
+
+const useTypewriter = (text, speed = 60) => {
+    const [displayed, setDisplayed] = useState('');
+
+    useEffect(() => {
+        setDisplayed('');
+        let i = 0;
+        const interval = setInterval(() => {
+            setDisplayed(text.slice(0, i + 1));
+            i++;
+            if (i >= text.length) clearInterval(interval);
+        }, speed);
+        return () => clearInterval(interval);
+    }, [text, speed]);
+
+    return displayed;
+};
+
+const useFadeIn = () => {
+    const ref = useRef(null);
+    const [visible, setVisible] = useState(false);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => { if (entry.isIntersecting) setVisible(true); },
+            { threshold: 0.15 }
+        );
+        if (ref.current) observer.observe(ref.current);
+        return () => observer.disconnect();
+    }, []);
+
+    return [ref, visible];
+};
+
+const BarChart = ({ data, labels, yAxisLabels, yTicks = 5, animated = false }) => {
     const width = 700;
     const height = 220;
-    const paddingLeft = 44;
+    const paddingLeft = 72;
     const paddingRight = 12;
     const paddingTop = 12;
     const paddingBottom = 40;
@@ -35,16 +88,26 @@ const BarChart = ({ data, labels, yAxisLabels, yTicks = 5 }) => {
     const barCount = data.values.length;
     const gap = chartWidth / barCount;
     const barWidth = gap * 0.6;
-    const yStep = data.yMax / yTicks;
+    const rawStep = data.yMax / yTicks;
+    const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep || 1)));
+    const normalized = rawStep / magnitude;
+    let niceN;
+    if      (normalized <= 1)   niceN = 1;
+    else if (normalized <= 2)   niceN = 2;
+    else if (normalized <= 2.5) niceN = 2.5;
+    else if (normalized <= 5)   niceN = 5;
+    else                        niceN = 10;
+    const yStep    = niceN * magnitude;
+    const niceYMax = yStep * yTicks;
 
     const getX = (i) => paddingLeft + i * gap + gap / 2;
-    const getY = (val) => paddingTop + chartHeight - (val / data.yMax) * chartHeight;
-    const getBarH = (val) => Math.max(0, (val / data.yMax) * chartHeight);
+    const getY = (val) => paddingTop + chartHeight - (val / niceYMax) * chartHeight;
+    const getBarH = (val) => Math.max(0, (val / niceYMax) * chartHeight);
 
     return (
         <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
             {Array.from({ length: yTicks + 1 }, (_, i) => {
-                const val = i * yStep;
+                const val = parseFloat((i * yStep).toFixed(4));
                 const y = getY(val);
                 return (
                     <g key={i}>
@@ -66,6 +129,14 @@ const BarChart = ({ data, labels, yAxisLabels, yTicks = 5 }) => {
                     rx={3}
                     fill={data.color}
                     opacity={val === 0 ? 0.15 : 0.85}
+                    style={{
+                        transformBox: 'fill-box',
+                        transformOrigin: 'bottom',
+                        transform: animated ? 'scaleY(1)' : 'scaleY(0)',
+                        transition: animated
+                            ? `transform 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) ${i * 20}ms`
+                            : 'none',
+                    }}
                 />
             ))}
 
@@ -84,27 +155,33 @@ const BarChart = ({ data, labels, yAxisLabels, yTicks = 5 }) => {
     );
 };
 
-// ─── Chart Card ───────────────────────────────────────────────────────────────
-
 const ChartCard = ({ chartConfig, align, loading, moodLabels, yTicks }) => {
     const isRight = align === 'right';
+    const [ref, visible] = useFadeIn();
+
     return (
-        <section style={styles.card}>
+        <section
+            ref={ref}
+            style={{
+                ...styles.card,
+                opacity: visible ? 1 : 0,
+                transform: visible ? 'translateY(0)' : 'translateY(32px)',
+                transition: 'opacity 1.2s ease, transform 1.2s ease',
+            }}
+        >
             <div style={{ ...styles.cardInner, flexDirection: isRight ? 'row' : 'row-reverse' }}>
-                <div style={styles.textSide}>
+                <div style={{ ...styles.textSide, alignItems: isRight ? 'flex-end' : 'flex-start' }}>
                     <div style={styles.chartTitle}>{chartConfig.label}</div>
                     <div style={styles.chartDesc}>{chartConfig.description}</div>
                     {loading && <div style={styles.loadingBadge}>Lädt…</div>}
                 </div>
                 <div style={styles.chartSide}>
-                    <BarChart data={chartConfig} labels={last30Days.map(d => d.label)} yAxisLabels={moodLabels} yTicks={yTicks} />
+                    <BarChart data={chartConfig} labels={last30Days.map(d => d.label)} yAxisLabels={moodLabels} yTicks={yTicks} animated={visible} />
                 </div>
             </div>
         </section>
     );
 };
-
-// ─── Main Page ────────────────────────────────────────────────────────────────
 
 const StatsPage = () => {
     let navigate = useNavigate();
@@ -142,7 +219,6 @@ const StatsPage = () => {
     const [todoLoading, setTodoLoading] = useState(true);
     const [todoError, setTodoError] = useState(null);
 
-    // Mood: 0 = bad, 1 = okay, 2 = good
     const [moodData, setMoodData] = useState({
         label: "Daily Mood",
         unit: "",
@@ -154,26 +230,22 @@ const StatsPage = () => {
     const [moodLoading, setMoodLoading] = useState(true);
     const [moodError, setMoodError] = useState(null);
 
+    const allLoaded = !waterLoading && !sleepLoading && !todoLoading && !moodLoading;
+    const motto = allLoaded
+        ? getMotivationalQuote(waterData, sleepData, todoData, moodData)
+        : '';
+    const typedMotto = useTypewriter(motto);
+
     useEffect(() => {
         const fetchWater = async () => {
             try {
-                const token = localStorage.getItem('accessToken');
-                const res = await fetch(`${API_BASE}/v1/analytics/water`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const json = await res.json();
-
-                // dailyBreakdown nach Datum indexieren
+                const json = await getWaterAnalytics();
                 const byDate = {};
                 (json.dailyBreakdown || []).forEach(({ date, waterIntake }) => {
                     byDate[date] = waterIntake;
                 });
-
-                // Für jeden der letzten 30 Tage den Wert holen (0 wenn kein Eintrag)
                 const values = last30Days.map(({ key }) => byDate[key] ?? 0);
                 const maxVal = Math.max(...values, 4);
-
                 setWaterData(prev => ({ ...prev, values, yMax: Math.ceil(maxVal) }));
                 setWaterError(null);
             } catch (err) {
@@ -185,21 +257,13 @@ const StatsPage = () => {
 
         const fetchSleep = async () => {
             try {
-                const token = localStorage.getItem('accessToken');
-                const res = await fetch(`${API_BASE}/v1/analytics/sleep`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const json = await res.json();
-
+                const json = await getSleepAnalytics();
                 const byDate = {};
                 (json.dailyBreakdown || []).forEach(({ date, sleepHours }) => {
                     byDate[date] = sleepHours;
                 });
-
                 const values = last30Days.map(({ key }) => byDate[key] ?? 0);
                 const maxVal = Math.max(...values, 12);
-
                 setSleepData(prev => ({ ...prev, values, yMax: Math.ceil(maxVal) }));
                 setSleepError(null);
             } catch (err) {
@@ -209,26 +273,15 @@ const StatsPage = () => {
             }
         };
 
-        fetchWater();
-        fetchSleep();
-
         const fetchTodo = async () => {
             try {
-                const token = localStorage.getItem('accessToken');
-                const res = await fetch(`${API_BASE}/v1/analytics/todos`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const json = await res.json();
-
+                const json = await getTodosAnalytics();
                 const byDate = {};
                 (json.dailyBreakdown || []).forEach(({ date, completed }) => {
                     byDate[date] = completed;
                 });
-
                 const values = last30Days.map(({ key }) => byDate[key] ?? 0);
                 const maxVal = Math.max(...values, 5);
-
                 setTodoData(prev => ({ ...prev, values, yMax: Math.ceil(maxVal) }));
                 setTodoError(null);
             } catch (err) {
@@ -240,21 +293,13 @@ const StatsPage = () => {
 
         const fetchMood = async () => {
             try {
-                const token = localStorage.getItem('accessToken');
-                const res = await fetch(`${API_BASE}/v1/analytics/mood`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const json = await res.json();
-
+                const json = await getMoodAnalytics();
                 const moodShift = { 0: 1, 1: 2, 2: 3 };
                 const byDate = {};
                 (json.dailyBreakdown || []).forEach(({ date, mood }) => {
                     byDate[date] = moodShift[mood] ?? null;
                 });
-
                 const values = last30Days.map(({ key }) => byDate[key] ?? 0);
-
                 setMoodData(prev => ({ ...prev, values, yMax: 3 }));
                 setMoodError(null);
             } catch (err) {
@@ -264,6 +309,8 @@ const StatsPage = () => {
             }
         };
 
+        fetchWater();
+        fetchSleep();
         fetchTodo();
         fetchMood();
     }, []);
@@ -278,7 +325,11 @@ const StatsPage = () => {
             <section style={styles.cardGood}>
                 <div style={styles.grid}>
                     <section style={styles.cardPicture}></section>
-                    <section style={styles.logoGood}>You did good this Month!</section>
+                    <section style={styles.logoGood}>
+                        {typedMotto}
+                        <span style={{ borderRight: '3px solid #000', marginLeft: '4px', animation: 'blink 0.8s step-end infinite' }} />
+                        <style>{`@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }`}</style>
+                    </section>
                 </div>
             </section>
 
@@ -304,7 +355,6 @@ const StatsPage = () => {
         </div>
     );
 };
-
 
 const styles = {
     page: {
@@ -336,15 +386,15 @@ const styles = {
     grid: {
         display: 'grid',
         gridTemplateColumns: '2fr 4.5fr',
-        gap: '20px',
-        height: 'calc(75vh - 120px)',
+        gap: '0px',
+        height: '100%',
+        width: '100%',
     },
     cardGood: {
         borderRadius: '20px',
         border: '2px solid #000',
-        display: 'flex',
-        justifyContent: 'center',
         overflow: 'hidden',
+        height: 'calc(75vh - 120px)',
     },
     logoGood: {
         gridColumn: '2 / 4',
@@ -358,6 +408,7 @@ const styles = {
         gridColumn: '1',
         borderRight: '2px solid #000',
         overflow: 'hidden',
+        height: '100%',
         backgroundImage: `url(${gardenBg})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -390,14 +441,29 @@ const styles = {
         alignItems: 'center',
     },
     textSide: {
-        minWidth: '180px',
-        maxWidth: '200px',
-        flexShrink: 0,
+        flex: '1 0 0',
+        minWidth: 0,
     },
-    chartTitle: { fontSize: '20px', fontWeight: '600', marginBottom: '10px' },
-    chartDesc: { fontSize: '13px', fontWeight: '300', lineHeight: '1.6', color: '#555' },
-    loadingBadge: { marginTop: '8px', fontSize: '11px', color: '#999', fontStyle: 'italic' },
-    chartSide: { flex: 1, minWidth: 0 },
+    chartTitle: {
+        fontSize: '27px',
+        fontWeight: '600',
+        marginBottom: '10px'
+    },
+    chartDesc: {
+        fontSize: '20px',
+        fontWeight: '300',
+        lineHeight: '1.6',
+        color: '#555'
+    },
+    loadingBadge: {
+        marginTop: '8px',
+        fontSize: '11px', color: '#999',
+        fontStyle: 'italic'
+    },
+    chartSide: {
+        flex: '2 0 0',
+        minWidth: 0,
+    },
 };
 
 export default StatsPage;
