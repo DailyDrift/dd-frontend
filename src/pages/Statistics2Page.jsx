@@ -185,6 +185,9 @@ const ChartCard = ({ chartConfig, align, loading, moodLabels, yTicks }) => {
 const StatsPage = () => {
     let navigate = useNavigate();
 
+    // ── Fade-in for the hero card ──────────────────────────────────────────────
+    const [heroRef, heroVisible] = useFadeIn();
+
     const [waterData, setWaterData] = useState({
         label: "Water consumption",
         unit: "L",
@@ -321,7 +324,16 @@ const StatsPage = () => {
                 <button style={styles.menuButton} onClick={() => navigate("/")}>Home</button>
             </header>
 
-            <section style={styles.cardGood}>
+            {/* ── Hero card with fade-in ───────────────────────────────────────── */}
+            <section
+                ref={heroRef}
+                style={{
+                    ...styles.cardGood,
+                    opacity: heroVisible ? 1 : 0,
+                    transform: heroVisible ? 'translateY(0)' : 'translateY(32px)',
+                    transition: 'opacity 1.2s ease, transform 1.2s ease',
+                }}
+            >
                 <div style={styles.grid}>
                     <section style={styles.cardPicture}></section>
                     <section style={styles.logoGood}>
