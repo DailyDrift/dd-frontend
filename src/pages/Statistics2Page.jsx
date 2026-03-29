@@ -201,8 +201,8 @@ const StatsPage = () => {
     const [sleepError, setSleepError] = useState(null);
 
     const [todoData, setTodoData] = useState({
-        label: "Todos",
-        unit: " done",
+        label: "ToDos Done",
+        unit: "",
         yMax: 10,
         color: "#27AE60",
         description: "Setting up todos is a great way to prevent procrastination.",
@@ -279,6 +279,7 @@ const StatsPage = () => {
             } catch (err) {
                 setTodoError(err.message);
             } finally {
+                setTodoLoading(false);
                 setTodoLoading(false);
             }
         };
