@@ -25,6 +25,7 @@ export default function LoginPage() {
         e.preventDefault();
         setError(null);
         setLoading(true);
+        setHasLoaded(true); // ← Fix
         try {
             await login(username, password);
             navigate("/");
