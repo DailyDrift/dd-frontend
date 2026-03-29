@@ -3,13 +3,13 @@
 ## Setting up the project
 
 ```bash
-npm install
+$ npm install
 ```
 
 ## Running the projet
 
 ```bash
-npm run dev
+$ npm run dev
 ```
 
-The website can then be access via `localhost:5273`.
+The website can then be access via `localhost:5173`.
